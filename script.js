@@ -14,6 +14,7 @@ const GameState = Object.freeze({
   LEVEL4: "level_4",
   LEVEL5: "level_5",
   GAME_ENDED: "game_ended",
+  LEVEL_ENDED: "level_ended",
   GAME_OVER: "game_over",
 });
 
@@ -26,7 +27,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.GAME_ENDED;
+state = GameState.BOOTING;
 
 const audio = {
   accept: new Audio(
@@ -313,6 +314,27 @@ const levels = [
 		  </div>
 	  `,
   },
+  {
+    id: 2,
+    title: "Log oculto",
+    defaultError: "Respuesta incorrecta",
+    errors: [
+      {
+        pattern: "192.168.1.12",
+        error: "Esta IP es de un usuario común y corriente",
+      },
+    ],
+    answer: "192.168.1.5",
+    description:
+      "Encuentra la IP que estuvo intenando hackear constantemente los servidores",
+    placeholder: "Escribe la IP",
+    hint: "El sistema detectó un origen externo no autorizado",
+    render: `
+		  <div class="terminal">
+	  <p>no hay logs me da flojera</p>
+		  </div>
+	  `,
+  },
 ];
 
 class LevelScreen {
@@ -325,11 +347,16 @@ class LevelScreen {
     const button = document.querySelector(".continue-button");
     const input = document.querySelector(".input");
     const error = document.querySelector(".error");
+    const hintTrigger = document.querySelector(".hint-trigger");
+    const hintColumn = document.querySelector(".hint-column");
 
-    button.onclick = () => {
+    const validate = () => {
       if (input.value === this.level.answer) {
         audio.accept.play();
-        alert("respuesta correcta, continuar");
+
+        state = GameState.LEVEL_ENDED;
+
+        handleStateUpdate(this.level);
 
         return;
       }
@@ -354,6 +381,26 @@ class LevelScreen {
       button.style.borderColor = "var(--destructive)";
       button.style.color = "var(--destructive)";
     };
+
+    input.onkeydown = (e) => {
+      if (e.key == "Enter") {
+        validate();
+      }
+    };
+
+    hintTrigger.onclick = () => {
+      if (hintColumn.style.opacity === "1") {
+        hintTrigger.textContent = "[ F1: Mostrar pista ]";
+        hintColumn.style.opacity = "0";
+      } else {
+        hintTrigger.textContent = "[ F1: Ocultar pista ]";
+        hintColumn.style.opacity = "1";
+      }
+    };
+
+    button.onclick = () => {
+      validate();
+    };
   }
   render() {
     document.addEventListener("keydown", () => {
@@ -367,6 +414,9 @@ class LevelScreen {
 
     const screen = `
 		  <div class="center-container">
+		  <div class="status">
+${/* SESSION: LEVEL_${this.level.id} / 05 */ ""}
+	  </div>
 		  <div class="container">
 		  <div class="center">
 			<h1 class="text-xl font-semibold">${level.title}</h1>
@@ -391,12 +441,55 @@ class LevelScreen {
 
 		  <span class="error"></span>
 
+		  <div class="hint-container">
+		  <span class="hint-text hint-trigger" >
+		  [ F1: Mostrar pista ]
+	  </span>
+
+		  <div class="hint-column" style="opacity: 0; transition: all 0.25;">
+		  <span class="hint-text">
+		  > Conexion establecida con el informante
+	  </span>
+		  <span class="hint-text">
+		  >  "El intruso dejó una huella en el      
+                  sector de advertencias [WARN]"
+	  </span>
+		  </div>
+		  </div>
+
 		  </div>
 			</div>`;
 
     renderScreen(this.root, screen);
 
     setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
+  }
+}
+
+class LevelEndedScreen {
+  constructor(root, level) {
+    this.level = level;
+    this.root = root;
+  }
+  render() {
+    const screen = `<div class="center-container text-lg">
+		  <div style="font-size: 0.8rem; display: grid; gap: 2px;">
+		  <p>[ OK ] Access granted</p>
+		  <p>[ PROCESS ] DECRYPTING SECTOR 02...</p>
+		  <p>[##########----------] 50%</p>
+		  </div>
+		  </div>`;
+
+    renderScreen(this.root, screen);
+
+    setTimeout(() => {
+      // TODO: handle final level
+      state = Object.values(GameState).find(
+        (l) => l === `level_${this.level.id + 1}`,
+      );
+
+      handleStateUpdate();
+    }, 2000);
   }
 }
 
@@ -411,6 +504,21 @@ class GameEnded {
   constructor() {
     this.root = root;
   }
+  callback() {
+    const button = document.querySelector(".continue-button");
+
+    button.onclick = () => {
+      alert(
+        "TODO: decidir si el usuario ira al mismo nivel o ira al principio, por los momentos solo ira al principio",
+      );
+
+      updateLives(3);
+
+      state = GameState.INSTRUCTIONS;
+
+      handleStateUpdate();
+    };
+  }
   render() {
     // TODO: agregar fade staggering
     const screen = `<div class="center-container bg-black">
@@ -422,6 +530,8 @@ class GameEnded {
 		  </div>`;
 
     this.root.innerHTML = screen;
+
+    setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
   }
 }
 
@@ -438,7 +548,7 @@ function renderScreen(root, screen) {
   // return transition.updateCallbackDone;
 }
 
-function handleStateUpdate() {
+function handleStateUpdate(level) {
   switch (state) {
     case GameState.BOOTING:
       new BootingScreen(root).render();
@@ -454,6 +564,10 @@ function handleStateUpdate() {
       break;
     case GameState.GAME_ENDED:
       new GameEnded(root).render();
+
+      break;
+    case GameState.LEVEL_ENDED:
+      new LevelEndedScreen(root, level).render();
 
       break;
     default:

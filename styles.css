@@ -158,6 +158,10 @@ body::before {
 	font-size: 1rem;
 }
 
+.text-left {
+	text-align: left;
+}
+
 .text-2xl {
 	font-size: 2.5rem;
 	letter-spacing: -0.15em;
@@ -400,4 +404,34 @@ body::before {
 
 .lives {
 	view-transition-name: lives;
+}
+
+.hint-container {
+	position: absolute;
+	bottom: 2rem;
+	display: flex;
+	flex-direction: row;
+	gap: 1rem;
+	left: 1rem;
+	font-size: 0.8rem;
+}
+
+/* TODO: poner un hover aqui mas malandro */
+.hint-container:hover {
+	cursor: pointer;
+}
+
+.hint-column {
+	display: flex;
+	flex-direction: column;
+}
+
+.status {
+	position: absolute;
+	top: 2rem;
+	display: flex;
+	flex-direction: row;
+	gap: 1rem;
+	left: 1rem;
+	font-size: 0.8rem;
 }
