@@ -10,6 +10,11 @@ html {
   	view-transition-name: none; 
 }
 
+h1,  p {
+	margin: 0;
+}
+
+
 h1 {
 	font-weight: 300;
 	font-size: 2rem;
@@ -50,6 +55,7 @@ body::before {
 
 ::view-transition-new(game-container) {
   animation: fade-in 0.3s ease-in forwards;
+  animation-delay: 6s;
 }
 
 #root {
@@ -81,14 +87,33 @@ body::before {
 	max-height: 100vh;
 }
 
+.gap {
+	margin: 2.5rem 0;
+}
+
+.description {
+	font-size: 1.2rem;
+}
+
 /*class StartMenu*/
 
 .dialog {
-	border: var(--foreground);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	position: relative;
+	border: 1px solid var(--foreground);
+	padding: 1.8rem;
 	gap: 0.6rem;
+}
+
+.loader-title {
+	font-weight: 300;
+	font-size: 2rem;
+	margin: 0.8rem;
+	letter-spacing: -0.05em;
+	  font-family: "Silkscreen", sans-serif;
+	  font-weight: 600;
 }
 
 .loader {
@@ -127,3 +152,33 @@ body::before {
 	margin: 4px 0px;
 }
 
+.start-title {
+	font-weight: 100;
+	font-size: 2rem;
+	margin: 0;
+	  font-family: "Silkscreen", sans-serif;
+	  font-weight: 600;
+	letter-spacing: -0.10em;
+}
+
+.continue-button {
+	  font-family: "Silkscreen", sans-serif;
+	  font-weight: 500;
+	background-color: var(--background);
+	font-size: 1.2rem;
+	border: 1px solid var(--foreground);
+	color: var(--foreground);
+	padding: 0.6rem 1.2rem;
+	transition: ease 0.10s;
+}
+
+.continue-button:hover {
+	  font-family: "Silkscreen", sans-serif;
+	  cursor: pointer;
+	  font-weight: 500;
+	background-color: var(--foreground);
+	font-size: 1.2rem;
+	border: 1px solid var(--foreground);
+	color: var(--background);
+	padding: 0.6rem 1.2rem;
+}

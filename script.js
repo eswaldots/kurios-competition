@@ -89,7 +89,7 @@ class BootingScreen {
     const screen = `
 	  <div class="center-container">
 		  <div class="dialog">
-		  <h1>MISION SECRETA</h1>
+		  <h1 class="loader-title">MISION SECRETA</h1>
 
 		  <div class="loader">
 		  	<div class="loader-intern" ></div>
@@ -117,12 +117,26 @@ class StartMenuScreen {
     this.root = root;
   }
   render() {
+    const now = new Date().toLocaleDateString();
+
     const screen = `
+	  <div class="center-container">
 	  	<div class="dialog">
-  
-<h1>EXPEDIENTE CLASIFICADO</h1>
-          <p>ACCESO CONCEDIDO</p>
-          <button onclick="alert('Iniciando nivel 1...')">CONTINUAR</button>
+		  <div>
+<h1 class="start-title">EXPEDIENTE CLASIFICADO</h1>
+		  <div class="gap">
+          <p><strong>FECHA:</strong> ${now}</p>
+          <p><strong>UBICACION:</strong> SECTOR-K27</p>
+		  </div>
+
+          <div class="gap description gap">
+<p>El archivo fue recuperado tras el incidente.</p>
+<p>No hay registros oficiales.</p>
+<p>El agente asignado no regresó...</p>
+		  </div>
+		  </div>
+          <button class="continue-button">> Autorizar acceso</button>
+		  </div>
 		  </div>
 	  `;
 
