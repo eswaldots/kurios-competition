@@ -162,6 +162,20 @@ body::before {
 	text-align: left;
 }
 
+.h-screen {
+	height: 100vh;
+	margin: 0;
+	padding: 0;
+}
+
+.justify-between {
+	justify-content: space-between;
+}
+
+.pr-12 {
+	padding-right: 12rem;
+}
+
 .text-2xl {
 	font-size: 2.5rem;
 	letter-spacing: -0.15em;

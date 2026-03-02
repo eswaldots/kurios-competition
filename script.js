@@ -13,6 +13,7 @@ const GameState = Object.freeze({
   LEVEL3: "level_3",
   LEVEL4: "level_4",
   LEVEL5: "level_5",
+  // TODO: estamos usando game_ended como estado de game_over, esto esta mal por que game_over es para cuando el usuario pierde y game_ended es para cuando el usuario termina el juego
   GAME_ENDED: "game_ended",
   LEVEL_ENDED: "level_ended",
   GAME_OVER: "game_over",
@@ -27,7 +28,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.BOOTING;
+state = GameState.GAME_ENDED;
 
 const audio = {
   accept: new Audio(
@@ -48,7 +49,6 @@ function sleep(ms) {
 class BootingScreen {
   constructor(root) {
     this.root = root;
-    // TODO para SAMUEL: añade aqui la pantalla de carga
   }
   async callback() {
     async function runLoader(root) {
@@ -56,7 +56,7 @@ class BootingScreen {
         "CARGANDO IMAGENES",
         "CARGANDO FUENTES",
         "CARGANDO DECISIONES",
-        "CARGANDO KURIOS",
+        "HACKEANDO KURIOS",
         "CARGANDO INVISIBLE",
         "CARGANDO CENTINELA",
         "CARGANDO TRATOS",
@@ -289,6 +289,10 @@ const levels = [
         pattern: "192.168.1.12",
         error: "Esta IP es de un usuario común y corriente",
       },
+      {
+        pattern: "10.0.0.255",
+        error: "Esta es una IP enmascarada",
+      },
     ],
     answer: "192.168.1.5",
     description:
@@ -316,7 +320,7 @@ const levels = [
   },
   {
     id: 2,
-    title: "Log oculto",
+    title: "FRAGMENTO DE MEMORIA: SECTOR_K27",
     defaultError: "Respuesta incorrecta",
     errors: [
       {
@@ -324,14 +328,19 @@ const levels = [
         error: "Esta IP es de un usuario común y corriente",
       },
     ],
-    answer: "192.168.1.5",
+    answer: "k27",
     description:
-      "Encuentra la IP que estuvo intenando hackear constantemente los servidores",
-    placeholder: "Escribe la IP",
+      "El agente secreto reportó que la clave de acceso para el servidor central se encuentra oculta en este bloque",
+    placeholder: "[ Clave de acceso ]",
     hint: "El sistema detectó un origen externo no autorizado",
     render: `
-		  <div class="terminal">
-	  <p>no hay logs me da flojera</p>
+	  <div class="mx-auto my-2">
+  $%&@#*0101!!?$#@^&*()_+=-[]{};:'",.<>/?|~$<br/>
+  !@#$%^&*()11001010101110101010110101010101<br/>
+  #@%^&*()_ [ ██████ ] !!@#$%^&*()_+=-[]{};<br/>
+  !@#$%^&*()10101010101111010101010101010101<br/>
+  $%&@#*0101!!?$#@^&*()_+=-[]{};:'",.<>/?|~$<br/>
+	  <span class="my-2">[ SISTEMA ]: Realice un escaneo manual</span>
 		  </div>
 	  `,
   },
@@ -435,7 +444,7 @@ ${/* SESSION: LEVEL_${this.level.id} / 05 */ ""}
 	  <div class="level-footer">
 	  		<input class="input" placeholder="${level.placeholder}" />
 
-		  <button class="continue-button">Validar</button>
+		   <button class="continue-button">Validar</button>
 
 		  </div>
 
@@ -500,12 +509,40 @@ const hackerQuotes = [
   "Sí, soy un criminal. Mi crimen es el de juzgar a la gente por lo que dice y piensa, no por lo que parece.",
 ];
 
+const BindTypeWriter = ({ querySelection, delay, speed }) => {
+  const typewriter = document.querySelector(querySelection);
+
+  const text = typewriter.textContent;
+
+  typewriter.textContent = "";
+
+  setTimeout(() => {
+    for (let i = 0; i < text.length; ++i) {
+      setTimeout(() => {
+        typewriter.textContent += text[i];
+      }, speed * i);
+    }
+  }, delay ?? 0);
+};
+
 class GameEnded {
   constructor() {
     this.root = root;
   }
   callback() {
     const button = document.querySelector(".continue-button");
+
+    BindTypeWriter({ querySelection: ".typewriter", speed: 0.45 });
+    BindTypeWriter({
+      querySelection: ".typewriter2",
+      speed: 0.65,
+      delay: 600,
+    });
+    BindTypeWriter({
+      querySelection: ".typewriter3",
+      speed: 0.85,
+      delay: 800,
+    });
 
     button.onclick = () => {
       alert(
@@ -521,11 +558,78 @@ class GameEnded {
   }
   render() {
     // TODO: agregar fade staggering
-    const screen = `<div class="center-container bg-black">
-<h1 class="text-xl font-semibold">[ FATAL ERROR: CONNECTION TERMINATED BY REMOTE HOST ]</h1>
-	<p class="truncate-xl text-lg my-2">${hackerQuotes[Math.floor(Math.random() * hackerQuotes.length)]}</p>
+    const screen = `<div class="h-screen bg-black flex items-start justify-between pr-12">
+<pre class="font-semibold typewriter" style="font-size: 0.8rem; margin-top: -6rem;">
+                       uuuuuuuuuuuuuuuuuuuuu.
+                   .u$$$$$$$$$$$$$$$$$$$$$$$$$$W.
+                 u$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$Wu.
+               $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$i
+              $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+             $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+           .i$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$i
+           $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$W
+          .$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$W
+         .$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$i
+         #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$.
+         W$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$u       #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$~
+$#      "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$i        $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$        #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$         $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#$.        $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$#
+ $$      $iW$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$!
+ $$i      $$$$$$$#"" """#$$$$$$$$$$$$$$$$$#""""""#$$$$$$$$$$$$$$$W
+ #$$W    $$$#"            "       !$$$$$           "#$$$$$$$$$$#
+  $$$                      ! !iuW$$$$$                 #$$$$$$$#
+  #$$    $u                  $   $$$$$$$                  $$$$$$$~
+   "#    #$$i.               #   $$$$$$$.                 $$$$$$
+          $$$$$i.                """#$$$$i.               .$$$$#
+          $$$$$$$$!         .       $$$$$$$$$i           $$$$$
+          $$$$$  $iWW   .uW        #$$$$$$$$$W.       .$$$$$$#
+            "#$$$$$$$$$$$$#          $$$$$$$$$$$iWiuuuW$$$$$$$$W
+               !#""    ""             $$$$$$$##$$$$$$$$$$$$$$$$
+          i$$$$    .                   !$$$$$$ .$$$$$$$$$$$$$$$#
+         $$$$$$$$$$                    $$$$$$$$$Wi$$$$$$#"#$$
+         #$$$$$$$$$W.                   $$$$$$$$$$$#   
+          $$$$##$$$$!       i$u.  $. .i$$$$$$$$$#""
+             "     #W       $$$$$$$$$$$$$$$$$$$      u$#
+                            W$$$$$$$$$$$$$$$$$$      $$$$W
+                            $$!$$$##$$$$$$$$      $$$$!
+                           i$" $$$$  $$#"  """     W$$$$
+                                                   W$$$$!
+                      uW$$  uu  uu.  $$$  $$$Wu#   $$$$$$
+                     ~$$$$iu$$iu$$$uW$$! $$$$$$i .W$$$$$$
+             ..  !   "#$$$$$$$$$$##$$$$$$$$$$$$$$$$$$$$#"
+             $$W  $     "#$$$$$$$iW$$$$$$$$$$$$$$$$$$$$$W
+             $#          ""#$$$$$$$$$$$$$$$$$$$$$$$$$$$
+                              !$$$$$$$$$$$$$$$$$$$$$#
+                              $$$$$$$$$$$$$$$$$$$$$$!
+                            $$$$$$$$$$$$$$$$$$$$$$$
+                             $$$$$$$$$$$$$$$$$$$$"
+		  </pre>
 
-		  <button class="my-2 continue-button">Reintentar</button>
+		  <div>
+		  <pre class="typewriter2">
+ (\`-').-> (\`-')  _           <-.(\`-')  (\`-')  _ _(\`-')       <-.(\`-')            
+ (OO )__  (OO ).-/  _         __( OO)  ( OO).-/( (OO ).->     __( OO)      .->   
+,--. ,'-' / ,---.   \\-,-----.'-'. ,--.(,------. \\    .'_     '-'---.\\  ,--.'  ,-.
+|  | |  | | \\ /\`.\\   |  .--./|  .'   / |  .---' '\`'-..__)    | .-. (/ (\`-')'.'  /
+|  \`-'  | '-'|_.' | /_) (\`-')|      /)(|  '--.  |  |  ' |    | '-' \`.)(OO \\    / 
+|  .-.  |(|  .-.  | ||  |OO )|  .   '  |  .--'  |  |  / :    | /\`'.  | |  /   /) 
+|  | |  | |  | |  |(_'  '--'\\|  |\\   \\ |  \`---. |  '-'  /    | '--'  / \`-/   /\`  
+\`--' \`--' \`--' \`--'   \`-----'\`--' '--' \`------' \`------'     \`------'    \`--'    
+		  </pre>
+		  <pre class="typewriter3">
+.------..------..------..------..------..------.
+|K.--. ||R.--. ||O.--. ||N.--. ||O.--. ||S.--. |
+| :/\\: || :(): || :/\\: || :(): || :/\\: || :/\\: |
+| :\\/: || ()() || :\\/: || ()() || :\\/: || :\\/: |
+| '--'K|| '--'R|| '--'O|| '--'N|| '--'O|| '--'S|
+\`------'\`------'\`------'\`------'\`------'\`------'
+		  </pre>
+		  ${/*<button class="continue-button">Validar</button>*/ ""} 
+		  </div>
 
 		  </div>`;
 
