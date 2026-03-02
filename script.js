@@ -28,7 +28,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.GAME_ENDED;
+state = GameState.LEVEL3;
 
 const audio = {
   accept: new Audio(
@@ -320,29 +320,143 @@ const levels = [
   },
   {
     id: 2,
-    title: "FRAGMENTO DE MEMORIA: SECTOR_K27",
+    title: "syntax error",
     defaultError: "Respuesta incorrecta",
     errors: [
       {
-        pattern: "192.168.1.12",
-        error: "Esta IP es de un usuario común y corriente",
+        pattern: "=",
+        error:
+          "Estás cerca, el operador `=` asigna valores a las variables, no las compara.",
+      },
+      {
+        pattern: "KRONOS",
+        error: "Esta es la clave a ser validada, no un operador",
       },
     ],
-    answer: "k27",
+    answer: "==",
     description:
-      "El agente secreto reportó que la clave de acceso para el servidor central se encuentra oculta en este bloque",
-    placeholder: "[ Clave de acceso ]",
+      "Error de sintaxis detectado en el módulo de seguridad. Inserte el operador que deberia usarse realmente.",
+    placeholder: "Operador correcto",
     hint: "El sistema detectó un origen externo no autorizado",
     render: `
-	  <div class="mx-auto my-2">
-  $%&@#*0101!!?$#@^&*()_+=-[]{};:'",.<>/?|~$<br/>
-  !@#$%^&*()11001010101110101010110101010101<br/>
-  #@%^&*()_ [ ██████ ] !!@#$%^&*()_+=-[]{};<br/>
-  !@#$%^&*()10101010101111010101010101010101<br/>
-  $%&@#*0101!!?$#@^&*()_+=-[]{};:'",.<>/?|~$<br/>
-	  <span class="my-2">[ SISTEMA ]: Realice un escaneo manual</span>
+	  <div class="code" style="color: gray;">
+	  <pre>
+<span style="color: purple">function</span> <span style="color: yellow">validarAcceso</span>(input) {
+  <span style="color:purple">let</span> clave_maestra = <span style="color: green">"KRONOS"</span>;
+  
+  // ERROR DETECTADO EN LA LINEA 5:
+  <span style="color: purple">if</span> (input = clave_maestra) { 
+      <span style="color:purple">return</span> <span style="color:green">"Acceso Concedido"</span>;
+  }
+}
+	</pre>
 		  </div>
 	  `,
+  },
+  {
+    id: 3,
+    title: "[ RECOVERY_MODE: SECTOR_K27 ]",
+    defaultError: "Kronos",
+    errors: [
+      {
+        pattern: "askdjfhaskjdh",
+        error: "que raro",
+      },
+    ],
+    answer: "kronos",
+    description: "AVISO: LA SEÑAL ESTÁ SIENDO INTERCEPTADA POR KRONOS.",
+    placeholder: "Mensaje desencriptado",
+    hint: "Usa el cursor para desencriptar la señal.",
+    callback: (root) => {
+      const chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      const move = document.querySelector(".encrypted-terminal-hover");
+
+      const p = document.querySelector(".text-hover");
+      const hiddenP = document.querySelector(".hidden-text-hover");
+      const hiddenAscii = document.querySelector(".text-hover-container");
+
+      const hiddenText = `
+	    `;
+      const charsCount = 3290;
+
+      for (let i = 0; i < charsCount; i++) {
+        if (i <= hiddenText.length) {
+          hiddenP.textContent += hiddenText[i];
+        } else {
+          p.textContent += chars.charAt(
+            Math.floor(Math.random() * chars.length),
+          );
+
+          hiddenP.textContent += chars.charAt(
+            Math.floor(Math.random() * chars.length),
+          );
+        }
+      }
+
+      document.body.onpointermove = (event) => {
+        const { clientX, clientY } = event;
+
+        const rect = p.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        hiddenAscii.style.setProperty("--mouse-x", `${x}px`);
+        hiddenAscii.style.setProperty("--mouse-y", `${y}px`);
+      };
+
+      let bgBuffer = Array.from(
+        { length: charsCount },
+        () => chars[Math.floor(Math.random() * chars.length)],
+      );
+
+      const updateNoise = () => {
+        for (let i = 0; i < charsCount * 0.02; i++) {
+          const randomIndex = Math.floor(Math.random() * charsCount);
+          const newChar = chars[Math.floor(Math.random() * chars.length)];
+
+          bgBuffer[randomIndex] = newChar;
+        }
+
+        p.textContent = bgBuffer.join("");
+
+        requestAnimationFrame(updateNoise);
+      };
+
+      updateNoise();
+    },
+    render: `
+	  <div class="terminal-parent">
+	  <div class="encrypted-terminal" style="text-wrap: wrap; text-overflow: clip; font-size: 0.6rem; font-family: "JetBrains Mono", monospace">
+	  <div style="overflow: hidden; max-height: 300px;">
+	  <p class="text-hover"></p>
+	  <div class="text-hover-container">
+	  <p class="hidden-text-hover"></p>
+	  <p class="hidden-text-ascii">
+ ██ ▄█▀ ██▀███   ▒█████   ███▄    █  ▒█████    ██████ 
+ ██▄█▒ ▓██ ▒ ██▒▒██▒  ██▒ ██ ▀█   █ ▒██▒  ██▒▒██    ▒ 
+▓███▄░ ▓██ ░▄█ ▒▒██░  ██▒▓██  ▀█ ██▒▒██░  ██▒░ ▓██▄   
+▓██ █▄ ▒██▀▀█▄  ▒██   ██░▓██▒  ▐▌██▒▒██   ██░  ▒   ██▒
+▒██▒ █▄░██▓ ▒██▒░ ████▓▒░▒██░   ▓██░░ ████▓▒░▒██████▒▒
+▒ ▒▒ ▓▒░ ▒▓ ░▒▓░░ ▒░▒░▒░ ░ ▒░   ▒ ▒ ░ ▒░▒░▒░ ▒ ▒▓▒ ▒ ░
+░ ░▒ ▒░  ░▒ ░ ▒░  ░ ▒ ▒░ ░ ░░   ░ ▒░  ░ ▒ ▒░ ░ ░▒  ░ ░
+░ ░░ ░   ░░   ░ ░ ░ ░ ▒     ░   ░ ░ ░ ░ ░ ▒  ░  ░  ░  
+░  ░      ░         ░ ░           ░     ░ ░        ░  
+	  </p>
+
+	  </div>
+</div>
+
+	  </div>
+	  </div>
+	  `,
+  },
+  {
+    id: 4,
+    title: "El titulo del nivel 4",
+    placeholder: "nivel 4",
+    description: "nivel 4",
+    render: `nivel 4`,
   },
 ];
 
@@ -353,6 +467,9 @@ class LevelScreen {
     this.root = root;
   }
   callback() {
+    // BindTypeWriter({ querySelection: "typewriter1", speed: 0.5, delay: 0 });
+    // BindTypeWriter({ querySelection: "typewriter2", speed: 0.5, delay: 0.25 });
+
     const button = document.querySelector(".continue-button");
     const input = document.querySelector(".input");
     const error = document.querySelector(".error");
@@ -428,8 +545,8 @@ ${/* SESSION: LEVEL_${this.level.id} / 05 */ ""}
 	  </div>
 		  <div class="container">
 		  <div class="center">
-			<h1 class="text-xl font-semibold">${level.title}</h1>
-			<p class="text-lg my-1">${level.description}</p>
+			<h1 class="text-xl font-semibold typewriter1">${level.title}</h1>
+			<p class="text-lg my-1 typewriter2">${level.description}</p>
 		  </div>
 
 		  ${level.render}
@@ -471,6 +588,9 @@ ${/* SESSION: LEVEL_${this.level.id} / 05 */ ""}
 
     renderScreen(this.root, screen);
 
+    if (level.callback) {
+      setTimeout(() => level.callback(), DELAY_BEFORE_CALLBACK);
+    }
     setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
   }
 }
@@ -510,19 +630,30 @@ const hackerQuotes = [
 ];
 
 const BindTypeWriter = ({ querySelection, delay, speed }) => {
-  const typewriter = document.querySelector(querySelection);
+  const container = document.querySelector(querySelection);
+  container.style.opacity = 0;
 
-  const text = typewriter.textContent;
+  if (!container) return;
 
-  typewriter.textContent = "";
+  const text = container.textContent.trim();
+  container.textContent = "";
 
+  const charSpans = text.split("").map((char) => {
+    const span = document.createElement("span");
+    span.textContent = char;
+    span.style.visibility = "hidden";
+    container.appendChild(span);
+    return span;
+  });
+
+  container.style.opacity = 1;
   setTimeout(() => {
-    for (let i = 0; i < text.length; ++i) {
+    charSpans.forEach((span, i) => {
       setTimeout(() => {
-        typewriter.textContent += text[i];
+        span.style.visibility = "visible";
       }, speed * i);
-    }
-  }, delay ?? 0);
+    });
+  }, delay);
 };
 
 class GameEnded {
@@ -530,8 +661,6 @@ class GameEnded {
     this.root = root;
   }
   callback() {
-    const button = document.querySelector(".continue-button");
-
     BindTypeWriter({ querySelection: ".typewriter", speed: 0.45 });
     BindTypeWriter({
       querySelection: ".typewriter2",
@@ -543,6 +672,13 @@ class GameEnded {
       speed: 0.85,
       delay: 800,
     });
+    BindTypeWriter({
+      querySelection: ".typewriter4",
+      speed: 10,
+      delay: 1500,
+    });
+
+    const button = document.querySelector(".continue-button");
 
     button.onclick = () => {
       alert(
@@ -558,8 +694,8 @@ class GameEnded {
   }
   render() {
     // TODO: agregar fade staggering
-    const screen = `<div class="h-screen bg-black flex items-start justify-between pr-12">
-<pre class="font-semibold typewriter" style="font-size: 0.8rem; margin-top: -6rem;">
+    const screen = `<div class="h-screen bg-black flex items-center pr-12" style="gap: 18rem;">
+<pre class="font-semibold typewriter" style="font-size: 0.8rem; margin-top: -6rem; height: 100vh">
                        uuuuuuuuuuuuuuuuuuuuu.
                    .u$$$$$$$$$$$$$$$$$$$$$$$$$$W.
                  u$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$Wu.
@@ -611,24 +747,31 @@ $$         $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 		  <div>
 		  <pre class="typewriter2">
- (\`-').-> (\`-')  _           <-.(\`-')  (\`-')  _ _(\`-')       <-.(\`-')            
- (OO )__  (OO ).-/  _         __( OO)  ( OO).-/( (OO ).->     __( OO)      .->   
-,--. ,'-' / ,---.   \\-,-----.'-'. ,--.(,------. \\    .'_     '-'---.\\  ,--.'  ,-.
-|  | |  | | \\ /\`.\\   |  .--./|  .'   / |  .---' '\`'-..__)    | .-. (/ (\`-')'.'  /
-|  \`-'  | '-'|_.' | /_) (\`-')|      /)(|  '--.  |  |  ' |    | '-' \`.)(OO \\    / 
-|  .-.  |(|  .-.  | ||  |OO )|  .   '  |  .--'  |  |  / :    | /\`'.  | |  /   /) 
-|  | |  | |  | |  |(_'  '--'\\|  |\\   \\ |  \`---. |  '-'  /    | '--'  / \`-/   /\`  
-\`--' \`--' \`--' \`--'   \`-----'\`--' '--' \`------' \`------'     \`------'    \`--'    
+ ██░ ██  ▄▄▄       ▄████▄   ██ ▄█▀▓█████ ▓█████▄     ▄▄▄▄ ▓██   ██▓
+▓██░ ██▒▒████▄    ▒██▀ ▀█   ██▄█▒ ▓█   ▀ ▒██▀ ██▌   ▓█████▄▒██  ██▒
+▒██▀▀██░▒██  ▀█▄  ▒▓█    ▄ ▓███▄░ ▒███   ░██   █▌   ▒██▒ ▄██▒██ ██░
+░▓█ ░██ ░██▄▄▄▄██ ▒▓▓▄ ▄██▒▓██ █▄ ▒▓█  ▄ ░▓█▄   ▌   ▒██░█▀  ░ ▐██▓░
+░▓█▒░██▓ ▓█   ▓██▒▒ ▓███▀ ░▒██▒ █▄░▒████▒░▒████▓    ░▓█  ▀█▓░ ██▒▓░
+ ▒ ░░▒░▒ ▒▒   ▓▒█░░ ░▒ ▒  ░▒ ▒▒ ▓▒░░ ▒░ ░ ▒▒▓  ▒    ░▒▓███▀▒ ██▒▒▒ 
+ ▒ ░▒░ ░  ▒   ▒▒ ░  ░  ▒   ░ ░▒ ▒░ ░ ░  ░ ░ ▒  ▒    ▒░▒   ░▓██ ░▒░ 
+ ░  ░░ ░  ░   ▒   ░        ░ ░░ ░    ░    ░ ░  ░     ░    ░▒ ▒ ░░  
+ ░  ░  ░      ░  ░░ ░      ░  ░      ░  ░   ░        ░     ░ ░     
+                  ░                       ░               ░░ ░     
 		  </pre>
 		  <pre class="typewriter3">
-.------..------..------..------..------..------.
-|K.--. ||R.--. ||O.--. ||N.--. ||O.--. ||S.--. |
-| :/\\: || :(): || :/\\: || :(): || :/\\: || :/\\: |
-| :\\/: || ()() || :\\/: || ()() || :\\/: || :\\/: |
-| '--'K|| '--'R|| '--'O|| '--'N|| '--'O|| '--'S|
-\`------'\`------'\`------'\`------'\`------'\`------'
+ ▄▀▀▄ █  ▄▀▀▄▀▀▀▄  ▄▀▀▀▀▄   ▄▀▀▄ ▀▄  ▄▀▀▀▀▄   ▄▀▀▀▀▄ 
+█  █ ▄▀ █   █   █ █      █ █  █ █ █ █      █ █ █   ▐ 
+▐  █▀▄  ▐  █▀▀█▀  █      █ ▐  █  ▀█ █      █    ▀▄   
+  █   █  ▄▀    █  ▀▄    ▄▀   █   █  ▀▄    ▄▀ ▀▄   █  
+▄▀   █  █     █     ▀▀▀▀   ▄▀   █     ▀▀▀▀    █▀▀▀   
+█    ▐  ▐     ▐            █    ▐             ▐      
+▐                          ▐                         
 		  </pre>
-		  ${/*<button class="continue-button">Validar</button>*/ ""} 
+
+	<p style="margin-bottom: 2rem; margin-top: 2.5rem; max-width: 24rem; font-size: 0.9rem;" class="typewriter4">
+	${hackerQuotes[Math.floor(Math.random() * hackerQuotes.length)]}
+	</p>
+		  <button class="continue-button game-over-fade">Reintentar</button> 
 		  </div>
 
 		  </div>`;
