@@ -28,7 +28,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.LEVEL3;
+state = GameState.BOOTING;
 
 const audio = {
   accept: new Audio(
