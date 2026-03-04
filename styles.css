@@ -566,3 +566,27 @@ body::before {
 	opacity: 0;
 	animation-delay: 3s;
 }
+
+.knob {
+	background-color: black;
+	width: 3rem;
+	height: 3rem;
+	position: relative;
+	border-radius: 100%;
+	overflow: hidden;
+}
+
+.knob:hover {
+	cursor: pointer;
+}
+
+.knob::after {
+	content: "";
+	background-color: var(--foreground);
+	width: 0.5rem;
+	height: 1rem;
+	right: 50%;
+	transform: translate(50%, 0);
+	top: 0;
+	position: absolute;
+}

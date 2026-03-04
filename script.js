@@ -1,5 +1,4 @@
 // constantes
-
 const DELAY_BEFORE_CALLBACK = 50;
 const LIVES_STORAGE_KEY = "lives";
 
@@ -28,15 +27,11 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.BOOTING;
+state = GameState.LEVEL4;
 
 const audio = {
-  accept: new Audio(
-    "https://cdn.freesound.org/previews/220/220166_4100837-lq.mp3",
-  ),
-  reject: new Audio(
-    "https://cdn.freesound.org/previews/657/657950_6142149-lq.mp3",
-  ),
+  accept: new Audio("assets/audio/accept.mp3"),
+  reject: new Audio("assets/audio/reject.mp3"),
 };
 
 // aqui se guardan las vidas en el sessionStorage, pero realmente, no seria mejor guardar las vidas en un objeto de estado junto el estado del juego?
@@ -226,7 +221,7 @@ const LivesComponent = () => {
 
 const updateLives = (newValue) => {
   if (newValue <= 0) {
-    state = GameState.GAME_ENDED;
+    state = GameState.GAME_OVER;
 
     handleStateUpdate();
 
@@ -240,8 +235,7 @@ const updateLives = (newValue) => {
 
 		${Array.from({ length: newValue })
       .map(() => pixelHeartSvg)
-      .join("")}
-	`;
+      .join("")}`;
 };
 
 class InstructionsScreen {
@@ -454,9 +448,89 @@ const levels = [
   {
     id: 4,
     title: "El titulo del nivel 4",
-    placeholder: "nivel 4",
-    description: "nivel 4",
-    render: `nivel 4`,
+    placeholder: "Codigo secreto",
+    callback: () => {
+      // logica del audio y la visualización de este mismo
+      const encoded = new Audio("assets/audio/encoded.mp3");
+      const static = new Audio("assets/audio/static.mp3");
+      const canvas = document.getElementById("visualizer");
+      const ctx = canvas.getContext("2d");
+      const audioContext = new window.AudioContext();
+
+      canvas.width = 700;
+      canvas.height = 200;
+
+      const encodedSource = audioContext.createMediaElementSource(encoded);
+      const staticSource = audioContext.createMediaElementSource(static);
+
+      const analyzer = audioContext.createAnalyser();
+
+      // por que hacemos esto? se que esto hace que la carga sea mas detallada por el numero alto, pero especificamente como funciona?
+      analyzer.fftSize = 256;
+
+      const dataArray = new Uint8Array(analyzer.frequencyBinCount);
+
+      encodedSource.connect(analyzer);
+      staticSource.connect(analyzer);
+      analyzer.connect(audioContext.destination);
+      encodedSource.mediaElement.loop = true;
+      staticSource.mediaElement.loop = true;
+      encodedSource.mediaElement.play();
+      staticSource.mediaElement.play();
+
+      function draw() {
+        requestAnimationFrame(draw);
+        analyzer.getByteTimeDomainData(dataArray);
+
+        ctx.fillStyle = "rgba(200 200 200 0)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "oklch(0.51 0.23 277)";
+        ctx.beginPath();
+        // Draw each point in the waveform
+        const sliceWidth = canvas.width / dataArray.length;
+        let x = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * (canvas.height / 2);
+
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+
+          x += sliceWidth;
+        }
+
+        // Finish the line
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+      }
+
+      // logica del audio y la visualización de este mismo
+      const knob = document.querySelector(".knob");
+
+      knob.addEventListener("mouseover", () => {
+        console.log("clicked");
+      });
+
+      // llamamos draw aqui al final para entrar en el bucle de renderizado de `requestAnimationFrame`
+      draw();
+    },
+    description:
+      "La señal del agente perdido ha sido localizada. Está distorsionada. Intenta sintonizarla",
+    render: `<div class="terminal">
+	  <canvas id="visualizer"></canvas>
+
+
+
+	  </div>
+	  <div class="my-2">
+	  <div class="knob"></div>
+	  </div>
+	  `,
   },
 ];
 
@@ -477,7 +551,9 @@ class LevelScreen {
     const hintColumn = document.querySelector(".hint-column");
 
     const validate = () => {
-      if (input.value === this.level.answer) {
+      if (
+        String(input.value).toLowerCase() === this.level.answer.toLowerCase()
+      ) {
         audio.accept.play();
 
         state = GameState.LEVEL_ENDED;
@@ -529,12 +605,14 @@ class LevelScreen {
     };
   }
   render() {
-    document.addEventListener("keydown", () => {
-      // Optional: reset the sound playback to allow rapid key presses
-      const typingSound = new Audio(
-        "https://cdn.freesound.org/previews/380/380144_3249786-lq.mp3",
-      );
-      typingSound.play();
+    const typingSound = new Audio("assets/audio/typing.mp3");
+
+    document.addEventListener("keydown", (e) => {
+      if (e.repeat) return;
+      const sound = typingSound.cloneNode();
+      sound.preservesPitch = false;
+
+      sound.play();
     });
     const level = this.level;
 
@@ -656,7 +734,7 @@ const BindTypeWriter = ({ querySelection, delay, speed }) => {
   }, delay);
 };
 
-class GameEnded {
+class GameOverScreen {
   constructor() {
     this.root = root;
   }
@@ -809,8 +887,8 @@ function handleStateUpdate(level) {
       new InstructionsScreen(root).render();
 
       break;
-    case GameState.GAME_ENDED:
-      new GameEnded(root).render();
+    case GameState.GAME_OVER:
+      new GameOverScreen(root).render();
 
       break;
     case GameState.LEVEL_ENDED:
