@@ -11,7 +11,7 @@ const GameState = Object.freeze({
   LEVEL2: "level_2",
   LEVEL3: "level_3",
   LEVEL4: "level_4",
-  LEVEL5: "level_5",
+  FINAL_LEVEL: "FINAL_LEVEL",
   // TODO: estamos usando game_ended como estado de game_over, esto esta mal por que game_over es para cuando el usuario pierde y game_ended es para cuando el usuario termina el juego
   GAME_ENDED: "game_ended",
   LEVEL_ENDED: "level_ended",
@@ -27,7 +27,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.LEVEL4;
+state = GameState.BOOTING;
 
 const audio = {
   accept: new Audio("assets/audio/accept.mp3"),
@@ -447,7 +447,11 @@ const levels = [
   },
   {
     id: 4,
-    title: "El titulo del nivel 4",
+    title: "Intercepción de frecuencia",
+    hint: "La señal correcta se encuentra en un punto específico.Demasiada ganancia solo añadirá ruido.",
+    answer: "8022",
+    // TODO: esto seria un poco complejo, pero seria genial si dependiendo de que tanta estatica haya, se pueda dar feedback aqui al usuario de que esta haciendo algo mal o algo bien en los errores
+    defaultError: "Señal incorrecta",
     placeholder: "Codigo secreto",
     callback: () => {
       // logica del audio y la visualización de este mismo
@@ -510,29 +514,158 @@ const levels = [
       }
 
       // logica del audio y la visualización de este mismo
-      const knob = document.querySelector(".knob");
 
-      knob.addEventListener("mouseover", () => {
-        console.log("clicked");
+      // encapsulamos la logica de la perilla para usarla en las dos perillas
+      const KnobLogic = ({ id, onAngleChange, initialValue }) => {
+        const knob = document.getElementById(id);
+
+        // if (initialValue) {
+        //   knob.style.rotate = `${initialValue}deg`;
+        //
+        //   onAngleChange(knob, initialValue);
+        // }
+
+        let isInteracting = false;
+
+        knob.addEventListener("mousedown", () => {
+          isInteracting = true;
+        });
+
+        // esto hace que no se pueda seleccionar nada en el documento
+        document.onselectstart = () => {
+          return false;
+        };
+
+        document.addEventListener("mousemove", (e) => {
+          if (isInteracting) {
+            e.preventDefault();
+
+            const rect = knob.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const deltaX = e.clientX - centerX;
+            const deltaY = e.clientY - centerY;
+
+            let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+            angle += 90;
+
+            onAngleChange(knob, angle);
+          }
+
+          document.addEventListener("mouseup", () => {
+            isInteracting = false;
+          });
+        });
+      };
+
+      encodedSource.mediaElement.volume = 0.1;
+
+      KnobLogic({
+        initialValue: 160,
+        id: "frequency",
+        onAngleChange: (knob, angle) => {
+          const normalizedAngle = ((angle % 360) + 360) % 360;
+
+          const transition = normalizedAngle / 360;
+
+          knob.style.transform = `rotate(${normalizedAngle}deg)`;
+
+          staticSource.mediaElement.volume = 1 - transition;
+          // encodedSource.mediaElement.volume = transition;
+        },
+      });
+
+      KnobLogic({
+        initialValue: 270,
+        id: "gain",
+        onAngleChange: (knob, angle) => {
+          const normalizedAngle = ((angle % 360) + 360) % 360;
+          const volumeValue = normalizedAngle / 360;
+
+          knob.style.transform = `rotate(${normalizedAngle}deg)`;
+
+          staticSource.mediaElement.volume = volumeValue;
+          encodedSource.mediaElement.volume = volumeValue;
+        },
       });
 
       // llamamos draw aqui al final para entrar en el bucle de renderizado de `requestAnimationFrame`
       draw();
     },
     description:
-      "La señal del agente perdido ha sido localizada. Está distorsionada. Intenta sintonizarla",
+      "La señal del agente perdido ha sido localizada. Intenta sintonizarla.",
     render: `<div class="terminal">
 	  <canvas id="visualizer"></canvas>
 
 
 
 	  </div>
-	  <div class="my-2">
-	  <div class="knob"></div>
+	  <div class="my-4 flex items-center gap-6">
+	  <div class="gap-1 flex items-center flex-col">
+	  <div class="knob" id="frequency"></div>
+	  <span>Frecuencia</span>
+	  </div>
+
+	  <div class="gap-1 flex items-center flex-col">
+	  <div class="knob" id="gain"></div>
+	  <span>Ganancia</span>
+	  </div>
 	  </div>
 	  `,
   },
 ];
+
+class FinalLevelScreen {
+  constructor(root) {
+    this.root = root;
+  }
+  callback() {
+    BindTypeWriter({ querySelection: ".typewriter1", speed: 0.45, delay: 800 });
+    document.querySelectorAll(".shake").forEach((el) => {
+      const text = el.textContent.trim();
+      el.textContent = "";
+
+      text.split("").forEach((char) => {
+        const span = document.createElement("span");
+
+        if (char === " ") {
+          span.innerHTML = "&nbsp;";
+        } else {
+          span.textContent = char;
+        }
+
+        span.classList.add(["shaking"]);
+        el.appendChild(span);
+      });
+    });
+  }
+  render() {
+    const screen = `<div style="font-size: 0.9rem; letter-spacing: -0.03em">
+		  <p class="typewriter1">
+		  [ OK ] decrypting level 4 of file decryption
+	  </p>
+		  <p>[ error ] cannot decrypt the level 5, the process is trying to kill itself</p>
+		  <p>[ info ] log from the <span style="color: var(--destructive)" class="shake ">kronos</span> process</p>
+
+		  <p style="color: var(--destructive)" class="shake">
+		 > KRONOS NO ES UN PROTOCOLO.</p>
+<p class="shake" style="color: var(--destructive)">> ES UNA IA EXPERIMENTAL.</p>
+
+<p class="shake" style="color: var(--destructive)" class="shake">> INTENTA REESCRIBIR EL SISTEMA.</p>
+
+<p class="shake" style="color: var(--destructive)">> SI ESTAS LEYENDO ESTO</p>
+<p class="shake" style="color: var(--destructive)">> YA ES DEMASIADO TARDE.</p>
+		  </p>
+
+		  </div>`;
+
+    renderScreen(this.root, screen);
+
+    setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
+  }
+}
 
 class LevelScreen {
   constructor(level) {
@@ -559,6 +692,10 @@ class LevelScreen {
         state = GameState.LEVEL_ENDED;
 
         handleStateUpdate(this.level);
+
+        if (this.level.onSuccess) {
+          this.level.onSuccess();
+        }
 
         return;
       }
@@ -709,6 +846,7 @@ const hackerQuotes = [
 
 const BindTypeWriter = ({ querySelection, delay, speed }) => {
   const container = document.querySelector(querySelection);
+  console.log(container);
   container.style.opacity = 0;
 
   if (!container) return;
@@ -893,6 +1031,10 @@ function handleStateUpdate(level) {
       break;
     case GameState.LEVEL_ENDED:
       new LevelEndedScreen(root, level).render();
+
+      break;
+    case GameState.FINAL_LEVEL:
+      new FinalLevelScreen(root).render();
 
       break;
     default:

@@ -114,6 +114,18 @@ body::before {
 	max-height: 100vh;
 }
 
+.flex-col {
+	flex-direction: column;
+}
+
+.gap-1 {
+	gap: 8px;
+}
+
+.gap-6 {
+	gap: 6rem;
+}
+
 .bg-black {
 	background-color: black;
 }
@@ -185,6 +197,10 @@ body::before {
 
 .my-2 {
 	margin: 16px 0;
+}
+
+.my-4 {
+	margin: 32px 0;
 }
 
 .mx-1 {
@@ -574,7 +590,9 @@ body::before {
 	position: relative;
 	border-radius: 100%;
 	overflow: hidden;
+	rotate: 0deg;
 }
+
 
 .knob:hover {
 	cursor: pointer;
@@ -589,4 +607,35 @@ body::before {
 	transform: translate(50%, 0);
 	top: 0;
 	position: absolute;
+}
+
+.shaking {
+	animation: skewXShaking 0.2s linear infinite;
+	display: inline-block;
+}
+
+@keyframes skewXShaking {
+	0% {
+		transform: skewX(-25deg) skewY(15deg);
+	}
+
+	5% {
+		transform: skewX(25deg) skewY(250deg);
+	}
+
+	10% {
+		transform: skewX(-25deg);
+	}
+
+	15% {
+		transform: skewX(25deg);
+	}
+
+	20% {
+		transform: skewX(0deg);
+	}
+
+	100% {
+		transform: skewX(0deg);
+	}
 }
