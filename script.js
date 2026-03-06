@@ -28,7 +28,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.BOOTING;
+state = GameState.LEVEL3;
 
 const audio = {
   accept: new Audio("assets/audio/accept.mp3"),
@@ -274,8 +274,6 @@ class InstructionsScreen {
   }
 }
 
-const audioContext = new window.AudioContext();
-
 const levels = [
   {
     id: 1,
@@ -457,7 +455,7 @@ const levels = [
     defaultError: "Señal incorrecta",
     placeholder: "Codigo secreto",
     onSuccess: () => {
-      audioContext.close();
+      window.audioContext.close();
 
       state = GameState.FINAL_LEVEL_SEQUENCE;
 
@@ -465,6 +463,9 @@ const levels = [
     },
     callback: () => {
       // logica del audio y la visualización de este mismo
+      const context = new window.AudioContext();
+      // store the audioContext to suspend later
+      window.audioContext = context;
       const encoded = new Audio("assets/audio/encoded.mp3");
       const static = new Audio("assets/audio/static.mp3");
       const canvas = document.getElementById("visualizer");
