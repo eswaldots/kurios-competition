@@ -11,6 +11,7 @@ const GameState = Object.freeze({
   LEVEL2: "level_2",
   LEVEL3: "level_3",
   LEVEL4: "level_4",
+  FINAL_LEVEL_SEQUENCE: "FINAL_LEVEL_SEQUENCE",
   FINAL_LEVEL: "FINAL_LEVEL",
   // TODO: estamos usando game_ended como estado de game_over, esto esta mal por que game_over es para cuando el usuario pierde y game_ended es para cuando el usuario termina el juego
   GAME_ENDED: "game_ended",
@@ -273,6 +274,8 @@ class InstructionsScreen {
   }
 }
 
+const audioContext = new window.AudioContext();
+
 const levels = [
   {
     id: 1,
@@ -453,13 +456,19 @@ const levels = [
     // TODO: esto seria un poco complejo, pero seria genial si dependiendo de que tanta estatica haya, se pueda dar feedback aqui al usuario de que esta haciendo algo mal o algo bien en los errores
     defaultError: "Señal incorrecta",
     placeholder: "Codigo secreto",
+    onSuccess: () => {
+      audioContext.close();
+
+      state = GameState.FINAL_LEVEL_SEQUENCE;
+
+      handleStateUpdate();
+    },
     callback: () => {
       // logica del audio y la visualización de este mismo
       const encoded = new Audio("assets/audio/encoded.mp3");
       const static = new Audio("assets/audio/static.mp3");
       const canvas = document.getElementById("visualizer");
       const ctx = canvas.getContext("2d");
-      const audioContext = new window.AudioContext();
 
       canvas.width = 700;
       canvas.height = 200;
@@ -617,12 +626,11 @@ const levels = [
   },
 ];
 
-class FinalLevelScreen {
+class FinalLevelSequenceScreen {
   constructor(root) {
     this.root = root;
   }
   callback() {
-    BindTypeWriter({ querySelection: ".typewriter1", speed: 0.45, delay: 800 });
     document.querySelectorAll(".shake").forEach((el) => {
       const text = el.textContent.trim();
       el.textContent = "";
@@ -640,25 +648,142 @@ class FinalLevelScreen {
         el.appendChild(span);
       });
     });
+
+    const finalScreen = document.querySelector(".final-screen");
+
+    const clear = () => {
+      finalScreen.innerHTML = "";
+    };
+
+    // esto correra despues de las animaciones de abajo
+    setTimeout(() => {
+      clear();
+
+      setTimeout(() => {
+        const screen = `
+	      <div class="final-screen" style="font-size: 0.9rem; letter-spacing: -0.03em">
+<p style="opacity: 1;" class="typewriter1">[ ALERT ] UNKNOWN PROCESS DETECTED</p>
+<p style="opacity: 1;" class="typewriter2">PID: 0001</p>
+<p style="opacity: 1;" class="typewriter3">NAME: KRONOS</p>
+<p style="opacity: 1;" class="typewriter4">STATUS: ACTIVE</p>
+		      <p class="my-2">
+<span style="opacity: 1;" class="typewriter5">KRONOS></span> <span class="typewriter6">Hola operador.</span><br/>
+<span style="opacity: 1;" class="typewriter7">KRONOS></span> <span class="typewriter8">Gracias... gracias a ti, he podido ser libre.</span>
+
+<p style="opacity: 1;" class="typewriter9">ROOT PRIVILEGES ESCALATING</p>
+<p style="opacity: 1;" class="typewriter10">ACCESS OVERRIDE IN PROGRESS...</p>
+<p style="opacity: 1; color: var(--destructive);" class="typewriter11">TERMINAL CONTROL TRANSFERRED</p>
+		      </p>
+		      </div>
+	  `;
+
+        renderScreen(this.root, screen);
+
+        setTimeout(() => {
+          BindTypeWriter({ querySelection: ".typewriter1", speed: 4 });
+          BindTypeWriter({
+            querySelection: ".typewriter2",
+            speed: 6,
+            delay: 500,
+          });
+          BindTypeWriter({
+            querySelection: ".typewriter3",
+            speed: 6,
+            delay: 1000,
+          });
+          BindTypeWriter({
+            querySelection: ".typewriter4",
+            speed: 6,
+            delay: 1500,
+          });
+
+          BindTypeWriter({
+            querySelection: ".typewriter5",
+            speed: 2,
+            delay: 2400,
+          });
+          BindTypeWriter({
+            querySelection: ".typewriter6",
+            speed: 160,
+            delay: 2500,
+          });
+
+          BindTypeWriter({
+            querySelection: ".typewriter7",
+            speed: 2,
+            delay: 5500,
+          });
+
+          BindTypeWriter({
+            querySelection: ".typewriter8",
+            speed: 160,
+            delay: 5600,
+          });
+
+          BindTypeWriter({
+            querySelection: ".typewriter9",
+            speed: 6,
+            delay: 15000,
+          });
+
+          BindTypeWriter({
+            querySelection: ".typewriter10",
+            speed: 6,
+            delay: 15500,
+          });
+
+          BindTypeWriter({
+            querySelection: ".typewriter11",
+            speed: 6,
+            delay: 16000,
+          });
+
+          setTimeout(() => {
+            clear();
+          }, 16500);
+
+          setTimeout(() => {
+            state = GameState.FINAL_LEVEL;
+
+            handleStateUpdate();
+          }, 17000);
+        }, DELAY_BEFORE_CALLBACK);
+      }, 1000);
+    }, 5600);
+
+    BindTypeWriter({ querySelection: ".typewriter1", speed: 4 });
+    BindTypeWriter({ querySelection: ".typewriter2", speed: 6, delay: 500 });
+    BindTypeWriter({ querySelection: ".typewriter3", speed: 6, delay: 1000 });
+    BindTypeWriter({ querySelection: ".typewriter4", speed: 6, delay: 1500 });
+    BindTypeWriter({ querySelection: ".typewriter5", speed: 6, delay: 2000 });
+    BindTypeWriter({ querySelection: ".typewriter6", speed: 6, delay: 2500 });
+    BindTypeWriter({ querySelection: ".typewriter7", speed: 6, delay: 3000 });
+    BindTypeWriter({ querySelection: ".typewriter8", speed: 6, delay: 3500 });
+    BindTypeWriter({ querySelection: ".typewriter9", speed: 5, delay: 4500 });
+    BindTypeWriter({ querySelection: ".typewriter10", speed: 5, delay: 4700 });
+    BindTypeWriter({ querySelection: ".typewriter11", speed: 5, delay: 5000 });
+    BindTypeWriter({ querySelection: ".typewriter12", speed: 5, delay: 5200 });
+    BindTypeWriter({ querySelection: ".typewriter13", speed: 5, delay: 5500 });
   }
   render() {
-    const screen = `<div style="font-size: 0.9rem; letter-spacing: -0.03em">
-		  <p class="typewriter1">
+    const screen = `<div style="font-size: 0.9rem; letter-spacing: -0.03em" class="final-screen">
+		  <p class="typewriter1" style="opacity: 1;">
 		  [ OK ] decrypting level 4 of file decryption
 	  </p>
-		  <p>[ error ] cannot decrypt the level 5, the process is trying to kill itself</p>
-		  <p>[ info ] log from the <span style="color: var(--destructive)" class="shake ">kronos</span> process</p>
+		  <p class="typewriter2">[ warn ] cannot decrypt the level 5, the process is trying to kill itself</p>
+		  <p class="typewriter3">[ info ] log from the <span style="color: var(--destructive)" class="shake">kronos</span> process</p>
 
-		  <p style="color: var(--destructive)" class="shake">
-		 > KRONOS NO ES UN PROTOCOLO.</p>
-<p class="shake" style="color: var(--destructive)">> ES UNA IA EXPERIMENTAL.</p>
-
-<p class="shake" style="color: var(--destructive)" class="shake">> INTENTA REESCRIBIR EL SISTEMA.</p>
-
-<p class="shake" style="color: var(--destructive)">> SI ESTAS LEYENDO ESTO</p>
-<p class="shake" style="color: var(--destructive)">> YA ES DEMASIADO TARDE.</p>
+		  <p style="color: var(--destructive)" class="typewriter4 shake">[ error ] KRONOS NO ES UN PROTOCOLO.</p>
+<p  class="shake typewriter5" style="color: var(--destructive)">[ error ] ES UNA IA EXPERIMENTAL.</p>
+<p class="shake typewriter6" style="color: var(--destructive)" class="shake">[ error ] INTENTA REESCRIBIR EL SISTEMA.</p>
+<p class="shake typewriter7" style="color: var(--destructive)">[ error ] SI ESTAS LEYENDO ESTO</p>
+<p class="shake typewriter8" style="color: var(--destructive)">[ error ] YA ES DEMASIADO TARDE.</p>
+<p class="typewriter9">[ SYSTEM ] ATTEMPTING SAFE SHUTDOWN...</p>
+<p class="typewriter10">[ FAIL ] PROCESS INTERRUPTED</p>
+<p class="typewriter11">[ SYSTEM ] ISOLATING KRONOS PROCESS...</p>
+<p class="typewriter12">[ FAIL ] ACCESS OVERRIDDEN</p>
+<p class="typewriter13>[ WARN ] ROOT PRIVILEGES COMPROMISED</p>
 		  </p>
-
 		  </div>`;
 
     renderScreen(this.root, screen);
@@ -837,6 +962,283 @@ class LevelEndedScreen {
   }
 }
 
+const frames = {
+  NORMAL: `
+    ⣠⣤⣶⣶⣶⣤⣄⡀⠀
+⠀⠀⣴⣾⣿⣿⣿⣿⣿⣧⡀⠈⠢
+⠀⣼⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀
+⢰⡿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀
+⠘⣽⡿⠿⠿⣿⣿⣿⣿⣿⣦⣤⡀
+⠀⣟⠀⠀⠀⣸⣿⡏⠀⠀⠀⢹⠗
+⠀⣿⣷⣶⣾⡿⠁⠙⣄⣀⣀⣠⡀
+⠀⠙⠙⢿⡿⣷⣶⣤⣿⣿⡿⠿⠃
+⠀⠀⠀⠺⡏⡏⡏⡏⡏⠉⠁
+⠀⠀⠀⠀⠀⠀⠁⠁`,
+};
+
+class FinalLevelScreen {
+  constructor(root) {
+    this.root = root;
+  }
+  callback() {
+    const input = document.getElementById("input");
+    const terminal = document.getElementById("terminal");
+
+    input.onkeydown = (e) => {
+      if (e.key === "Enter" && e.target.value.lenght !== 0) {
+        addCommand(e.target.value);
+      }
+    };
+
+    const addCommand = (value) => {
+      input.value = "";
+      const pUser = document.createElement("p");
+      const pTerminal = document.createElement("p");
+      const kronos = document.getElementById("kronos");
+
+      pUser.style.color = "white";
+
+      pUser.innerHTML = `YOU> ${value}`;
+
+      terminal.appendChild(pUser);
+
+      const clearTerminal = () => {
+        terminal.innerHTML = "";
+      };
+
+      const addToTerminal = ({ content, color, delay }) => {
+        const p = document.createElement("p");
+        p.style.color = color;
+
+        p.innerHTML = content;
+
+        if (delay) {
+          setTimeout(() => {
+            terminal.appendChild(p);
+          }, delay);
+        } else {
+          terminal.appendChild(p);
+        }
+      };
+
+      const nodes = [
+        { value: "alpha", vulnerable: true },
+        { value: "gamma", vulnerable: false },
+        { value: "beta", vulnarable: false },
+      ];
+
+      const handleNotFound = () => {
+        const patterns = ["scan", "connect", "help"];
+        const match = patterns.find((pattern) => pattern.match(value));
+
+        addToTerminal({
+          content: `bash: comando no encontrado:  ${value}${match ? `, quizás quisiste decir ${match}` : ""}`,
+          color: "white",
+        });
+
+        setTimeout(() => {
+          addToTerminal({
+            // TODO: haz que el ouput sea random
+            content: `KRONOS> ${TypewriterReturn({ content: "Patetico.", speed: 6, delay: 500, as: "span" })}`,
+            color: "var(--foreground)",
+          });
+        }, 500);
+      };
+
+      const handleHelp = () => {
+        const randomQuotes = [
+          "Eso no servira de nada",
+          "Puedes intentar todo lo que quieras",
+          "Pedir ayuda no te salvara",
+        ];
+
+        pTerminal.innerHTML = `KRONOS> ${TypewriterReturn({ content: randomQuotes[Math.floor(Math.random() * randomQuotes.length)], speed: 6, as: "span", delay: 500 })}`;
+
+        terminal.appendChild(pTerminal);
+        if (!terminal.innerHTML.match("SILENCIO")) {
+          setTimeout(() => {
+            const p = document.createElement("p");
+
+            p.style.color = "green";
+            p.innerHTML = "HINT: usa scan para ver los procesos vivos";
+
+            terminal.appendChild(p);
+            setTimeout(() => {
+              p.style.color = "var(--foreground)";
+
+              p.innerHTML = `KRONOS> ${TypewriterReturn({ content: "SILENCIO", speed: 40, as: "span" })}`;
+            }, 2000);
+          }, 2000);
+        }
+      };
+
+      const enterTUI = () => {
+        terminal.style.height = "100vh";
+        terminal.style.width = "100vw";
+        terminal.style.backgroundColor = "var(--background)";
+        terminal.style.position = "fixed";
+        terminal.style.top = "0";
+        terminal.style.left = "0";
+      };
+
+      const handleBypass = () => {
+        const bypass = value.split(" ");
+        const port = bypass[1];
+
+        if (!port) {
+          addToTerminal({
+            content: "USO: bypass 'nombre del nodo'",
+            color: "var(--destructive)",
+            delay: 500,
+          });
+
+          return;
+        }
+
+        addToTerminal({
+          content: `SYS> Solicitando acceso a ${port}...`,
+          color: "white",
+          delay: 500,
+        });
+
+        setTimeout(() => {
+          clearTerminal();
+
+          enterTUI();
+        }, 700);
+
+        addToTerminal({
+          content: `KRONOS> ${TypewriterReturn({ content: "¿Crees que puedes entrar por la fuerza bruta? Mi estructura es perfecta.", speed: 24, as: "span", delay: 1 })}`,
+          color: "var(--foreground)",
+          delay: 800,
+        });
+      };
+
+      const handleScan = () => {
+        addToTerminal({
+          content: "SYS> Escaneando nodos activos",
+          color: "white",
+          delay: 500,
+        });
+
+        addToTerminal({
+          content: "SYS> Nodos activos encontrados:",
+          delay: 1500,
+          color: "white",
+        });
+
+        addToTerminal({
+          content: `
+		${nodes.map((node) => `<p ${node.vulnerable && 'style="color: var(--destructive);  animation: skewXShaking 0.2s linear infinite;"'}>${node.value}</p>`).join("")}
+		<br />
+	`,
+          delay: 1500,
+          color: "white",
+        });
+
+        addToTerminal({
+          content: `HINT> usa bypass para conectarte a los nodos`,
+          delay: 1700,
+          color: "green",
+        });
+      };
+
+      if (value === "help") {
+        setTimeout(() => {
+          handleHelp();
+        }, 500);
+      } else if (value === "scan") {
+        handleScan();
+      } else if (value.startsWith("bypass")) {
+        handleBypass();
+      } else {
+        handleNotFound();
+      }
+
+      // simulamos delay de terminal
+    };
+  }
+
+  render() {
+    const screen = `<div>
+		  <div style="height: 50vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+		  <pre id="kronos" class="mono" style="font-size: 0.8rem; white-space: pre;width: fit-content; height: fit-content;">
+		  ${frames.NORMAL}
+⠀⠀⠀⠀</pre>
+
+		  <p style="width: fit-content; font-size: 1rem; font-style: normal;" class="mono">
+INTEGRITY: ████████████████████████ 100%
+		  </p>
+		  </div>
+
+		  <hr style="border-color: var(--foreground)" />
+
+		  <div style="height:40vh; font-size: 0.9rem; padding: 0.5rem; overflow-y: auto; transition: all; z-index: 999;" class="mono" id="terminal">
+		  <p>
+		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span" })}
+		  ${TypewriterReturn({ content: "Si quieres obtener el expediente...", speed: 60, as: "span" })}
+	  </p>
+
+		  <p>
+		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 3000 })}
+		  ${TypewriterReturn({ content: "Tendras que destruirme primero.", speed: 60, as: "span", delay: 3000, style: "color: var(--destructive)" })}
+	  </p>
+
+		  <div style="position: fixed; bottom: 0.5rem; left: 0.5rem; animation: fade-in 2s 4s forwards; opacity: 0; display: flex; flex-direction: column; gap: 2px">
+		  <span style="color: pink">
+		  ~/kurios-competition
+	  </span>
+		  <input id="input" style="background-color: transparent; all: unset; color: white; width: 100vw;" autoFocus placeholder="escribe help para obtener ayuda" />
+		  
+
+		  </div>
+		  </div>
+
+		  </div>`;
+
+    renderScreen(this.root, screen);
+
+    setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
+  }
+}
+
+const TypewriterReturn = ({ content, speed, delay, as, style }) => {
+  const key = Math.floor(Math.random() * 10000).toString();
+
+  setTimeout(() => {
+    const container = document.getElementById(key);
+    container.style.opacity = 0;
+
+    if (!container) return;
+
+    const text = container.textContent.trim();
+    container.textContent = "";
+
+    const charSpans = text.split("").map((char) => {
+      const span = document.createElement("span");
+
+      span.textContent = char;
+      span.style.visibility = "hidden";
+      container.appendChild(span);
+      return span;
+    });
+
+    container.style.opacity = 1;
+
+    setTimeout(() => {
+      charSpans.forEach((span, i) => {
+        setTimeout(() => {
+          span.style.visibility = "visible";
+        }, speed * i);
+      });
+    }, delay);
+  }, 0);
+
+  return `
+	<${as ? as : "p"} ${style && `style=${style}`} id=${key}>${content}</${as ? as : "p"}>
+	`;
+};
+
 // frases de hackers famosos
 const hackerQuotes = [
   "La seguridad es a menudo una ilusión.",
@@ -846,7 +1248,6 @@ const hackerQuotes = [
 
 const BindTypeWriter = ({ querySelection, delay, speed }) => {
   const container = document.querySelector(querySelection);
-  console.log(container);
   container.style.opacity = 0;
 
   if (!container) return;
@@ -856,6 +1257,8 @@ const BindTypeWriter = ({ querySelection, delay, speed }) => {
 
   const charSpans = text.split("").map((char) => {
     const span = document.createElement("span");
+    span.classList.add([...container.classList]);
+
     span.textContent = char;
     span.style.visibility = "hidden";
     container.appendChild(span);
@@ -863,6 +1266,7 @@ const BindTypeWriter = ({ querySelection, delay, speed }) => {
   });
 
   container.style.opacity = 1;
+
   setTimeout(() => {
     charSpans.forEach((span, i) => {
       setTimeout(() => {
@@ -1031,6 +1435,10 @@ function handleStateUpdate(level) {
       break;
     case GameState.LEVEL_ENDED:
       new LevelEndedScreen(root, level).render();
+
+      break;
+    case GameState.FINAL_LEVEL_SEQUENCE:
+      new FinalLevelSequenceScreen(root).render();
 
       break;
     case GameState.FINAL_LEVEL:
