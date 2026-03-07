@@ -28,7 +28,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.LEVEL3;
+state = GameState.BOOTING;
 
 const audio = {
   accept: new Audio("assets/audio/accept.mp3"),
@@ -328,7 +328,7 @@ const levels = [
         error: "Esta es la clave a ser validada, no un operador",
       },
     ],
-    answer: "==",
+    answer: "===",
     description:
       "Error de sintaxis detectado en el módulo de seguridad. Inserte el operador que deberia usarse realmente.",
     placeholder: "Operador correcto",
@@ -451,10 +451,11 @@ const levels = [
     title: "Intercepción de frecuencia",
     hint: "La señal correcta se encuentra en un punto específico.Demasiada ganancia solo añadirá ruido.",
     answer: "8022",
-    // TODO: esto seria un poco complejo, pero seria genial si dependiendo de que tanta estatica haya, se pueda dar feedback aqui al usuario de que esta haciendo algo mal o algo bien en los errores
+    // TODO: esto seria un poco complejo, pero seria genial si dependiendo de que tanta estatica haya, se pueda dar feedback aqui al usuario de que esta haciendo algo mal o algo bien en los errores, algo asi como un barometro o grafica de referencia
     defaultError: "Señal incorrecta",
     placeholder: "Codigo secreto",
     onSuccess: () => {
+      // TODO: agrega definiciones de audioContext
       window.audioContext.close();
 
       state = GameState.FINAL_LEVEL_SEQUENCE;
@@ -518,7 +519,6 @@ const levels = [
           x += sliceWidth;
         }
 
-        // Finish the line
         ctx.lineTo(canvas.width, canvas.height / 2);
         ctx.stroke();
       }
@@ -1004,7 +1004,9 @@ class FinalLevelScreen {
       terminal.appendChild(pUser);
 
       const clearTerminal = () => {
-        terminal.innerHTML = "";
+        terminal.querySelectorAll("p").forEach((p) => {
+          terminal.removeChild(p);
+        });
       };
 
       const addToTerminal = ({ content, color, delay }) => {
@@ -1012,13 +1014,22 @@ class FinalLevelScreen {
         p.style.color = color;
 
         p.innerHTML = content;
+        const scrollToEnd = () => {
+          terminal.scrollTo({
+            top: terminal.scrollHeight,
+            behavior: "smooth",
+          });
+        };
 
         if (delay) {
           setTimeout(() => {
             terminal.appendChild(p);
+            scrollToEnd();
           }, delay);
         } else {
           terminal.appendChild(p);
+
+          scrollToEnd();
         }
       };
 
@@ -1029,6 +1040,8 @@ class FinalLevelScreen {
       ];
 
       const handleNotFound = () => {
+        const quotes = ["Patetico.", "Adorable humano."];
+
         const patterns = ["scan", "connect", "help"];
         const match = patterns.find((pattern) => pattern.match(value));
 
@@ -1040,7 +1053,7 @@ class FinalLevelScreen {
         setTimeout(() => {
           addToTerminal({
             // TODO: haz que el ouput sea random
-            content: `KRONOS> ${TypewriterReturn({ content: "Patetico.", speed: 6, delay: 500, as: "span" })}`,
+            content: `KRONOS> ${TypewriterReturn({ content: quotes[Math.floor(Math.random() * quotes.length)], speed: 6, delay: 500, as: "span" })}`,
             color: "var(--foreground)",
           });
         }, 500);
@@ -1074,12 +1087,23 @@ class FinalLevelScreen {
       };
 
       const enterTUI = () => {
+        input.style.opacity = 0;
         terminal.style.height = "100vh";
         terminal.style.width = "100vw";
         terminal.style.backgroundColor = "var(--background)";
         terminal.style.position = "fixed";
         terminal.style.top = "0";
         terminal.style.left = "0";
+      };
+
+      const exitTUI = () => {
+        input.style.opacity = 1;
+        terminal.style.height = "36vh";
+        terminal.style.position = "relative";
+        terminal.style.top = "";
+        terminal.style.left = "";
+
+        terminal.style.bottom = "0";
       };
 
       const handleBypass = () => {
@@ -1112,6 +1136,64 @@ class FinalLevelScreen {
           content: `KRONOS> ${TypewriterReturn({ content: "¿Crees que puedes entrar por la fuerza bruta? Mi estructura es perfecta.", speed: 24, as: "span", delay: 1 })}`,
           color: "var(--foreground)",
           delay: 800,
+        });
+
+        setTimeout(() => {
+          clearTerminal();
+        }, 2000);
+
+        const Timer = ({ onError }) => {
+          setTimeout(() => {
+            const coords = document.querySelector("#coords");
+
+            coords.focus();
+
+            const timer = document.querySelector("#timer");
+
+            for (let i = 15; i >= 0; i--) {
+              setTimeout(
+                () => {
+                  timer.innerHTML = String(i);
+
+                  if (i === 0) {
+                    container.innerHTML = "";
+
+                    onError();
+                  }
+                },
+                (15 - i) * 1000,
+              );
+            }
+          }, 3000);
+
+          return `
+		<div class="center-container" style="font-family: 'Silkscreen'" id="container">
+			<div style="text-align: center; display: grid;">
+<h2 style="font-weight: 700; opacity: 1; max-width: 56rem;">\t\t${TypewriterReturn({ content: "[SISTEMA: ENLACE SINCRONIZADO. ENCUENTRA LA DISCORDANCIA]", speed: 24 })}</h2>
+
+			<p class="text-lg">[TIEMPO RESTANTE]: 00:<span id="timer">15</span></p>
+			</div>
+
+			<pre style="font-size: 2rem; font-family: 'Silkscreen'">
+     1      2      3      4
+A  [ 01 ] [ 01 ] [ 01 ] [ 01 ]
+B  [ 01 ] [ 01 ] [ 0A ] [ 01 ]
+C  [ 01 ] [ 01 ] [ 01 ] [ 01 ]
+			</pre>
+			<div style="font-size: 1.25rem">
+			<p>[YOU]: <input style="all: unset; color: white; text-transform: capitalize" placeholder="INGRESA COORDENADA"  autoFocus id="coords" /></p>
+			</div>
+			</div>
+			`;
+        };
+
+        addToTerminal({
+          content: Timer({
+            onError: () => {
+              exitTUI();
+            },
+          }),
+          delay: 2500,
         });
       };
 
@@ -1174,7 +1256,7 @@ INTEGRITY: ███████████████████████
 
 		  <hr style="border-color: var(--foreground)" />
 
-		  <div style="height:40vh; font-size: 0.9rem; padding: 0.5rem; overflow-y: auto; transition: all; z-index: 999;" class="mono" id="terminal">
+		  <div style="height:36vh; font-size: 0.9rem; padding: 0.5rem; overflow-y: auto; transition: all; z-index: 999;" class="mono" id="terminal">
 		  <p>
 		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span" })}
 		  ${TypewriterReturn({ content: "Si quieres obtener el expediente...", speed: 60, as: "span" })}
