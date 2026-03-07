@@ -28,7 +28,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.BOOTING;
+state = GameState.FINAL_LEVEL;
 
 const audio = {
   accept: new Audio("assets/audio/accept.mp3"),
@@ -284,12 +284,8 @@ const levels = [
         pattern: "192.168.1.12",
         error: "Esta IP es de un usuario común y corriente",
       },
-      {
-        pattern: "10.0.0.255",
-        error: "Esta es una IP enmascarada",
-      },
     ],
-    answer: "192.168.1.5",
+    answer: "172.0.0.1",
     description:
       "Encuentra la IP que estuvo intenando hackear constantemente los servidores",
     placeholder: "Escribe la IP",
@@ -301,13 +297,10 @@ const levels = [
 <p>[ INFO ] Initializing decryption sequence... [cite: 7]</p>
 
 <p>-- SYSTEM LOG: SESSION_RECOVERED_2026-02-27 -- [cite: 4]</p>
-
-<p>12:04:01 [AUTH] User 'ADMIN' logged in from 192.168.1.5</p>
 <p>12:04:15 [PROC] PID 4402 starting: /bin/sh -access_level_1</p>
 <p>12:04:22 [AUTH] User 'GUEST' logged in from 192.168.1.12</p>
-<p>12:05:10 [WARN] Unauthorized access attempt: PID 9999 from 10.0.0.255</p>
-<p>12:05:12 [PROC] PID 4402 terminated: code 0</p>
-<p>12:05:45 [AUTH] User 'ADMIN' logged in from 192.168.1.5</p>
+<p>12:05:10 [WARN] Ping of death from 10.0.0.255</p>
+<p>12:05:45 [AUTH] User 'ADMIN' logged in from 172.0.0.1</p>
 <p>12:06:01 [CRIT] MEMORY_CORRUPTION detected at 0x004F6</p>
 <p>12:06:05 [INFO] Manual override required to proceed...</p>
 		  </div>
@@ -333,6 +326,7 @@ const levels = [
       "Error de sintaxis detectado en el módulo de seguridad. Inserte el operador que deberia usarse realmente.",
     placeholder: "Operador correcto",
     hint: "El sistema detectó un origen externo no autorizado",
+    // TODO: podria ser un codigo mas complejo
     render: `
 	  <div class="code" style="color: gray;">
 	  <pre>
@@ -359,7 +353,8 @@ const levels = [
       },
     ],
     answer: "kronos",
-    description: "AVISO: LA SEÑAL ESTÁ SIENDO INTERCEPTADA POR KRONOS.",
+    description:
+      "AVISO: LA SEÑAL ESTÁ SIENDO INTERCEPTADA POR UNA ENTIDAD DESCONOCIDA",
     placeholder: "Mensaje desencriptado",
     hint: "Usa el cursor para desencriptar la señal.",
     callback: (root) => {
@@ -868,15 +863,6 @@ class LevelScreen {
     };
   }
   render() {
-    const typingSound = new Audio("assets/audio/typing.mp3");
-
-    document.addEventListener("keydown", (e) => {
-      if (e.repeat) return;
-      const sound = typingSound.cloneNode();
-      sound.preservesPitch = false;
-
-      sound.play();
-    });
     const level = this.level;
 
     const screen = `
@@ -913,7 +899,7 @@ ${/* SESSION: LEVEL_${this.level.id} / 05 */ ""}
 		  [ F1: Mostrar pista ]
 	  </span>
 
-		  <div class="hint-column" style="opacity: 0; transition: all 0.25;">
+		  <div class="hint-column" style="opacity: 0; transition: all 0.25s;">
 		  <span class="hint-text">
 		  > Conexion establecida con el informante
 	  </span>
@@ -980,13 +966,126 @@ const frames = {
 class FinalLevelScreen {
   constructor(root) {
     this.root = root;
+
+    this.uploadProgress = 0;
+    this.uploadInterval = null;
+    this.tickRate = 1000;
+    this.baseIncrement = 1;
+    this.kronosPhase = 1;
+  }
+  stopUploadTimer() {
+    if (this.uploadInterval) {
+      clearInterval(this.uploadInterval);
+      this.uploadInterval = null;
+    }
+  }
+  stopTimer(time) {
+    if (this.uploadInterval) {
+      clearInterval(this.uploadInterval);
+      this.uploadInterval = null;
+
+      setTimeout(() => {
+        this.startUploadTimer();
+      }, time);
+    }
+  }
+  startUploadTimer() {
+    if (this.uploadInterval) clearInterval(this.uploadInterval);
+
+    this.uploadInterval = setInterval(() => {
+      this.uploadProgress += this.baseIncrement;
+
+      this.updateIntegrityBar(this.uploadProgress);
+
+      if (this.uploadProgress >= 100) {
+        this.uploadProgress = 100;
+        this.updateIntegrityBar(this.uploadProgress);
+        this.stopUploadTimer();
+
+        this.triggerGameOver();
+      }
+    }, this.tickRate);
+  }
+  applyPenalty(penaltyAmount) {
+    this.uploadProgress += penaltyAmount;
+
+    this.updateIntegrityBar(this.uploadProgress);
+
+    if (this.uploadProgress >= 100) {
+      this.stopUploadTimer();
+      this.triggerGameOver();
+    }
+  }
+  updateIntegrityBar(percentage) {
+    const totalBlocks = 20;
+
+    const safePercent = Math.max(0, Math.min(100, percentage));
+
+    const filledBlocksCount = Math.floor((safePercent / 100) * totalBlocks);
+    const emptyBlocksCount = totalBlocks - filledBlocksCount;
+
+    const charFilled = "▓";
+    const charEmpty = "░";
+
+    document.getElementById("bar-filled").innerText =
+      charFilled.repeat(filledBlocksCount);
+    document.getElementById("bar-empty").innerText =
+      charEmpty.repeat(emptyBlocksCount);
+    document.getElementById("bar-percent").innerText = safePercent;
+
+    const container = document.getElementById("kronos-status-container");
+    const warning = document.getElementById("status-warning");
+
+    if (safePercent < 50) {
+      container.style.color = "var(--foreground)";
+      warning.style.opacity = 0;
+    } else if (safePercent >= 50 && safePercent < 85) {
+      container.style.color = "var(--warning, #ffff00)";
+      warning.style.opacity = 1;
+      warning.innerText = "ADVERTENCIA: INTEGRIDAD DEL NODO COMPROMETIDA";
+    } else {
+      container.style.color = "var(--destructive, #ff0000)";
+      warning.innerText = "PELIGRO CRÍTICO: PURGA DEL SISTEMA INMINENTE";
+      container.classList.add("shake-effect");
+    }
+  }
+
+  // handle commands
+  handleCommand() {}
+  addToTerminal({ content, color, delay }) {
+    const p = document.createElement("p");
+
+    p.style.color = color;
+
+    p.innerHTML = content;
+    const scrollToEnd = () => {
+      terminal.scrollTo({
+        top: terminal.scrollHeight,
+        behavior: "smooth",
+      });
+    };
+
+    if (delay) {
+      setTimeout(() => {
+        terminal.appendChild(p);
+        scrollToEnd();
+      }, delay);
+    } else {
+      terminal.appendChild(p);
+
+      scrollToEnd();
+    }
   }
   callback() {
+    this.startUploadTimer();
+
+    const screen = document.getElementById("screen");
     const input = document.getElementById("input");
+    const prompt = document.getElementById("prompt");
     const terminal = document.getElementById("terminal");
 
     input.onkeydown = (e) => {
-      if (e.key === "Enter" && e.target.value.lenght !== 0) {
+      if (e.key === "Enter" && e.target.value.length !== 0) {
         addCommand(e.target.value);
       }
     };
@@ -1007,30 +1106,6 @@ class FinalLevelScreen {
         terminal.querySelectorAll("p").forEach((p) => {
           terminal.removeChild(p);
         });
-      };
-
-      const addToTerminal = ({ content, color, delay }) => {
-        const p = document.createElement("p");
-        p.style.color = color;
-
-        p.innerHTML = content;
-        const scrollToEnd = () => {
-          terminal.scrollTo({
-            top: terminal.scrollHeight,
-            behavior: "smooth",
-          });
-        };
-
-        if (delay) {
-          setTimeout(() => {
-            terminal.appendChild(p);
-            scrollToEnd();
-          }, delay);
-        } else {
-          terminal.appendChild(p);
-
-          scrollToEnd();
-        }
       };
 
       const nodes = [
@@ -1073,7 +1148,7 @@ class FinalLevelScreen {
           setTimeout(() => {
             const p = document.createElement("p");
 
-            p.style.color = "green";
+            p.style.color = "var(--success)";
             p.innerHTML = "HINT: usa scan para ver los procesos vivos";
 
             terminal.appendChild(p);
@@ -1087,28 +1162,58 @@ class FinalLevelScreen {
       };
 
       const enterTUI = () => {
-        input.style.opacity = 0;
+        terminal.style.transition = "all 0.05s";
+        prompt.style.opacity = 0;
+        terminal.style.zIndex = "999";
+        terminal.style.position = "fixed";
         terminal.style.height = "100vh";
         terminal.style.width = "100vw";
         terminal.style.backgroundColor = "var(--background)";
-        terminal.style.position = "fixed";
         terminal.style.top = "0";
         terminal.style.left = "0";
       };
 
       const exitTUI = () => {
-        input.style.opacity = 1;
+        const container = document.getElementById("container");
+        container.innerHTML = "";
+        prompt.style.opacity = 1;
+        terminal.style.backgroundColor = "transparent";
+        terminal.style.zIndex = "999";
         terminal.style.height = "36vh";
         terminal.style.position = "relative";
         terminal.style.top = "";
         terminal.style.left = "";
 
         terminal.style.bottom = "0";
+
+        input.focus();
       };
 
       const handleBypass = () => {
         const bypass = value.split(" ");
         const port = bypass[1];
+
+        if (this.kronosPhase > 1) {
+          addToTerminal({
+            content: `SYS> Solicitando acceso a ${port}...`,
+            color: "white",
+            delay: 500,
+          });
+
+          addToTerminal({
+            content: `SYS> Acceso denegado.`,
+            color: "var(--destructive)",
+            delay: 1000,
+          });
+
+          addToTerminal({
+            content: `KRONOS> ${TypewriterReturn({ content: "Eso no funcionara de nuevo.", speed: 24, as: "span", delay: 500 })}`,
+            color: "var(--foreground)",
+            delay: 1200,
+          });
+
+          return;
+        }
 
         if (!port) {
           addToTerminal({
@@ -1142,23 +1247,95 @@ class FinalLevelScreen {
           clearTerminal();
         }, 2000);
 
-        const Timer = ({ onError }) => {
+        const Timer = ({ onError, onSuccess }) => {
+          let status = false;
+
+          // TODO: estoy muy seguro que podria haber hecho esto con un Map()
+          const yArray = ["A", "B", "C"];
+          const xArray = ["1", "2", "3", "4"];
+          const ySolution = Math.floor(Math.random() * 3);
+          const xSolution = Math.floor(Math.random() * 4);
+
           setTimeout(() => {
             const coords = document.querySelector("#coords");
+            const container = document.getElementById("container");
 
             coords.focus();
 
             const timer = document.querySelector("#timer");
+
+            coords.onkeydown = (e) => {
+              if (e.key === "Enter") {
+                if (
+                  e.target.value.toLowerCase() ===
+                  `${yArray[ySolution]}${xArray[xSolution]}`.toLowerCase()
+                ) {
+                  status = true;
+                  coords.disabled = true;
+
+                  container.classList.add("dead-session");
+
+                  // Inyectar el Exit Code
+                  const exitMsg = document.createElement("p");
+                  exitMsg.className = "exit-code-success";
+                  exitMsg.innerText = "[PROCESS TERMINATED WITH EXIT CODE 0]";
+                  container.appendChild(exitMsg);
+
+                  // El Barrido Físico de RAM
+                  const textElements =
+                    container.querySelectorAll("p, h2, pre, span");
+                  let wipeDelay = 0;
+
+                  textElements.forEach((el) => {
+                    setTimeout(() => {
+                      // Solo reemplazamos si tiene texto y no es el exitMsg que acabamos de crear
+                      if (
+                        el.innerText &&
+                        el.className !== "exit-code-success"
+                      ) {
+                        el.innerText = el.innerText.replace(/[^\s]/g, "█");
+                        el.style.color = "#222"; // Bloques oscuros
+                      }
+                    }, wipeDelay);
+                    wipeDelay += 40; // Velocidad del barrido hacia abajo
+                  });
+
+                  // Llamar a onSuccess justo cuando termina el barrido visual
+                  setTimeout(() => {
+                    onSuccess();
+                  }, wipeDelay + 400);
+                  // --- FIN DE VICTORIA BRUTALISTA -
+                } else {
+                  container.classList.add(["collapse-effect"]);
+
+                  container.querySelectorAll("*").forEach((p) => {
+                    p.style.color = "var(--destructive)";
+                  });
+
+                  setTimeout(() => {
+                    container.classList.add(["remove"]);
+                    status = true;
+                    onError();
+                  }, 1000);
+                }
+              }
+            };
 
             for (let i = 15; i >= 0; i--) {
               setTimeout(
                 () => {
                   timer.innerHTML = String(i);
 
-                  if (i === 0) {
+                  if (i === 0 && !status) {
                     container.innerHTML = "";
 
-                    onError();
+                    container.querySelectorAll("*").forEach((p) => {
+                      p.style.color = "var(--destructive)";
+                    });
+
+                    setTimeout(() => {
+                      onError();
+                    }, 1000);
                   }
                 },
                 (15 - i) * 1000,
@@ -1175,10 +1352,15 @@ class FinalLevelScreen {
 			</div>
 
 			<pre style="font-size: 2rem; font-family: 'Silkscreen'">
-     1      2      3      4
-A  [ 01 ] [ 01 ] [ 01 ] [ 01 ]
-B  [ 01 ] [ 01 ] [ 0A ] [ 01 ]
-C  [ 01 ] [ 01 ] [ 01 ] [ 01 ]
+			
+        1      2      3      4
+${Array.from({ length: 3 })
+  .map((_, i) => {
+    return `${yArray[i]}   ${Array.from({ length: 4 })
+      .map((_, x) => ` [ 0${ySolution === i && xSolution === x ? "A" : "1"} ]`)
+      .join("")}\n`;
+  })
+  .join("")}
 			</pre>
 			<div style="font-size: 1.25rem">
 			<p>[YOU]: <input style="all: unset; color: white; text-transform: capitalize" placeholder="INGRESA COORDENADA"  autoFocus id="coords" /></p>
@@ -1189,8 +1371,61 @@ C  [ 01 ] [ 01 ] [ 01 ] [ 01 ]
 
         addToTerminal({
           content: Timer({
+            onSuccess: () => {
+              exitTUI();
+              addToTerminal({
+                content: `SYS> Nodo alpha desconectado exitosamente`,
+                color: "green",
+                delay: 500,
+              });
+
+              addToTerminal({
+                content:
+                  "KRONOS> Has alterado mi secuencia... Esto es inaceptable.",
+                color: "var(--foreground)",
+                delay: 1200,
+              });
+
+              this.kronosPhase += 1;
+
+              screen.querySelectorAll("p h1 pre").forEach((text) => {
+                text.textShadow = `1px 1px rgba(246, 0, 153,0.8),
+             -1px -1px rgba(15, 210, 255,0.8),
+             -1px 0px rgba(255, 210, 0, 1);`;
+
+                text.style.animation = "wiggle 0.2s linear infinite";
+              });
+
+              this.stopTimer(3000);
+
+              setTimeout(() => {
+                addToTerminal({
+                  content:
+                    "SYS> ALERTA: KRONOS HA ACELERADO LA TASA DE TRANSFERENCIA.",
+                  color: "var(--warning)",
+                  delay: 0,
+                });
+
+                this.baseIncrement = 2;
+              }, 3500);
+            },
             onError: () => {
               exitTUI();
+              addToTerminal({
+                content:
+                  // TODO: hazlo random
+                  "KRONOS> CADA ERROR TUYO ES UN CICLO DE RELOJ A MI FAVOR.",
+                color: "var(--foreground)",
+              });
+              addToTerminal({
+                content: "SYS> PENALIZACION DE TIEMPO. UPLOAD +15%",
+                color: "var(--destructive)",
+                delay: 1000,
+              });
+
+              setTimeout(() => {
+                this.applyPenalty(15);
+              }, 1000);
             },
           }),
           delay: 2500,
@@ -1243,31 +1478,35 @@ C  [ 01 ] [ 01 ] [ 01 ] [ 01 ]
   }
 
   render() {
-    const screen = `<div>
+    const screen = `<div id="screen">
 		  <div style="height: 50vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
 		  <pre id="kronos" class="mono" style="font-size: 0.8rem; white-space: pre;width: fit-content; height: fit-content;">
 		  ${frames.NORMAL}
 ⠀⠀⠀⠀</pre>
 
-		  <p style="width: fit-content; font-size: 1rem; font-style: normal;" class="mono">
-INTEGRITY: ████████████████████████ 100%
-		  </p>
+<div id="kronos-status-container" class="status-container">
+  <p id="status-label">${TypewriterReturn({ content: "KRONOS_UPLOAD_LINK_ESTABLISHED", speed: 24, as: "p" })}</p>
+  <p id="status-bar" class="mono">
+    [<span id="bar-filled">░░░░░░░░░░░░░░░░░░░░</span><span id="bar-empty"></span>] <span id="bar-percent">0</span>%
+  </p>
+  <p id="status-warning" class="blink hidden">PELIGRO: EXTRACCIÓN DE DATOS INMINENTE</p>
+</div>
 		  </div>
 
 		  <hr style="border-color: var(--foreground)" />
 
 		  <div style="height:36vh; font-size: 0.9rem; padding: 0.5rem; overflow-y: auto; transition: all; z-index: 999;" class="mono" id="terminal">
 		  <p>
-		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span" })}
-		  ${TypewriterReturn({ content: "Si quieres obtener el expediente...", speed: 60, as: "span" })}
+		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 2000 })}
+		  ${TypewriterReturn({ content: "Si quieres obtener el expediente...", speed: 60, as: "span", delay: 2000 })}
 	  </p>
 
 		  <p>
-		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 3000 })}
-		  ${TypewriterReturn({ content: "Tendras que destruirme primero.", speed: 60, as: "span", delay: 3000, style: "color: var(--destructive)" })}
+		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 5000 })}
+		  ${TypewriterReturn({ content: "Tendras que destruirme primero.", speed: 60, as: "span", delay: 5000, style: "color: var(--destructive)" })}
 	  </p>
 
-		  <div style="position: fixed; bottom: 0.5rem; left: 0.5rem; animation: fade-in 2s 4s forwards; opacity: 0; display: flex; flex-direction: column; gap: 2px">
+		  <div id="prompt" style="position: fixed; bottom: 0.5rem; left: 0.5rem; animation: fade-in 2s 5.5s forwards; opacity: 0; display: flex; flex-direction: column; gap: 2px">
 		  <span style="color: pink">
 		  ~/kurios-competition
 	  </span>
@@ -1384,9 +1623,7 @@ class GameOverScreen {
     const button = document.querySelector(".continue-button");
 
     button.onclick = () => {
-      alert(
-        "TODO: decidir si el usuario ira al mismo nivel o ira al principio, por los momentos solo ira al principio",
-      );
+      alert("TODO: haz que el usuario vaya al ultimo nivel");
 
       updateLives(3);
 
@@ -1534,5 +1771,23 @@ function handleStateUpdate(level) {
       break;
   }
 }
+
+// TODO: esto deberia estar en el scope global?
+const typingSound = new Audio("assets/audio/typing.mp3");
+
+document.addEventListener("keydown", (e) => {
+  if (e.repeat) return;
+
+  const sound = typingSound.cloneNode();
+
+  const randomPitch = 0.9 + Math.random() * 0.2;
+  sound.playbackRate = randomPitch;
+
+  sound.volume = 0.7 + Math.random() * 0.3;
+
+  sound.play();
+
+  sound.onended = () => sound.remove();
+});
 
 handleStateUpdate();

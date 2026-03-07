@@ -3,6 +3,8 @@
 	--background: oklch(0.14 0.00 0);
 	--secondary: oklch(0.20 0.00 0);
 	--foreground: oklch(0.51 0.23 277);
+	--warning: #d79921;
+	--success: #00ff41;
 	--destructive: oklch(0.58 0.22 27);
 }
 
@@ -644,8 +646,247 @@ body::before {
 }
 
 .mono {
-	font-family: "JetBrains Mono", monospace;
+	font-family: 'JetBrains Mono', 'Courier New', monospace;
+	letter-spacing: -0.025em;
 	font-optical-sizing: auto;
-	font-weight: 400;
+	font-weight: 500;
 	font-style: normal;
+}
+
+@keyframes brutal-shake {
+
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+
+	10%,
+	30%,
+	50%,
+	70%,
+	90% {
+		transform: translateX(-6px);
+	}
+
+	20%,
+	40%,
+	60%,
+	80% {
+		transform: translateX(6px);
+	}
+}
+
+.shake-effect {
+	animation: brutal-shake 0.3s cubic-bezier(.36, .07, .19, .97) both;
+	color: var(--destructive, #ff3333);
+}
+
+@keyframes brutal-skew {
+
+	0%,
+	100% {
+		transform: skewX(0deg);
+	}
+
+	20% {
+		transform: skewX(-15deg);
+	}
+
+	40% {
+		transform: skewX(15deg);
+	}
+
+	60% {
+		transform: skewX(-5deg);
+	}
+
+	80% {
+		transform: skewX(5deg);
+	}
+}
+
+.skew-effect {
+	animation: brutal-skew 0.4s ease-in-out both;
+	text-shadow: 2px 0 red, -2px 0 blue;
+}
+
+@keyframes fatal-collapse {
+	0% {
+		transform: translate(0, 0) skew(0deg) scale(1);
+		filter: blur(0px) hue-rotate(0deg);
+		background-color: transparent;
+		box-shadow: 0 0 0 rgba(255, 0, 0, 0);
+	}
+
+	5% {
+		transform: translate(15px, -15px) skew(10deg) scale(1.05);
+		background-color: rgba(255, 0, 0, 0.8);
+		filter: blur(2px) invert(1);
+		box-shadow: 0 0 50px rgba(255, 0, 0, 1);
+	}
+
+	15%,
+	25%,
+	35% {
+		transform: translate(-20px, 10px) skew(-15deg);
+		filter: blur(1px) hue-rotate(90deg);
+		text-shadow: 3px 0 red, -3px 0 blue;
+		background-color: rgba(255, 0, 0, 0.2);
+	}
+
+	20%,
+	30%,
+	40% {
+		transform: translate(20px, -10px) skew(15deg);
+		filter: blur(2px) hue-rotate(-90deg);
+		text-shadow: -3px 0 red, 3px 0 blue;
+	}
+
+	50% {
+		transform: translate(0, 0) skew(50deg) scaleY(0.1) scaleX(1.5);
+		filter: blur(5px) invert(0);
+		background-color: black;
+		opacity: 1;
+	}
+
+	70% {
+		transform: translate(0, 200px) scale(0);
+		opacity: 0.5;
+		filter: blur(10px);
+	}
+
+	100% {
+		transform: translate(0, 0) scale(0);
+		opacity: 0;
+		z-index: 0;
+		filter: blur(20px);
+	}
+}
+
+.collapse-effect {
+	animation: fatal-collapse 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.dead-session {
+	color: #444 !important;
+	text-shadow: none !important;
+	pointer-events: none;
+}
+
+.dead-session input {
+	color: #00ff41 !important;
+}
+
+.exit-code-success {
+	color: #00ff41;
+	font-family: 'JetBrains Mono', 'Courier New', monospace;
+	font-weight: bold;
+	margin-top: 1rem;
+	background-color: #000;
+	display: inline-block;
+	padding: 2px 8px;
+}
+
+.status-container {
+	font-family: 'JetBrains Mono', 'Courier New', monospace;
+	font-size: 1.1rem;
+	width: fit-content;
+	padding: 0.75rem 1rem;
+	color: white;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	transition: color 0.15s ease, border-color 0.15s ease;
+	margin-bottom: 1rem;
+
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+#status-label {
+	margin: 0 0 0.5rem 0;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: #777;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+#status-bar {
+	margin: 0;
+	letter-spacing: 0.15em;
+	line-height: 1;
+}
+
+.status-container.state-warning {
+	--kronos-color: #d79921;
+	border-color: #d79921;
+}
+
+.status-container.state-critical {
+	--kronos-color: #cc241d;
+	border-color: #cc241d;
+}
+
+/* Clases de utilidad */
+.hidden {
+	display: none;
+}
+
+.blink {
+	animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+	50% {
+		opacity: 0;
+	}
+}
+
+@keyframes wiggle {
+	0% {
+		transform: skewX(24deg);
+	}
+
+	10% {
+		transform: skewX(-8deg);
+	}
+
+	20% {
+		transform: skewX(55deg);
+	}
+
+	30% {
+		transform: skewX(-90deg);
+	}
+
+	40% {
+		transform: skewX(29deg);
+	}
+
+	50% {
+		transform: skewX(-90deg);
+	}
+
+	60% {
+		transform: skewX(3deg);
+	}
+
+	70% {
+		transform: skewX(-2deg);
+	}
+
+	80% {
+		transform: skewX(1deg);
+	}
+
+	90% {
+		transform: skewX(10deg);
+	}
+
+	100% {
+		transform: skewX(0deg);
+	}
 }
