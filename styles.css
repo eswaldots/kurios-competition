@@ -890,3 +890,69 @@ body::before {
 		transform: skewX(0deg);
 	}
 }
+
+.selected {
+	animation: selected 3s ease infinite;
+}
+
+@keyframes selected {
+
+	0%,
+	50%,
+	100% {
+		background-color: color-mix(in oklch, var(--foreground), transparent 20%);
+	}
+
+	25%,
+	75% {
+		background-color: color-mix(in oklch, var(--foreground), transparent 90%);
+	}
+}
+
+.placeholder {
+	position: relative;
+}
+
+.placeholder::after {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	content: attr(data-placeholder);
+	pointer-events: none;
+	opacity: 0.6;
+}
+
+@keyframes glitch {
+	0% {
+		transform: translate(0);
+	}
+
+	20% {
+		transform: translate(-5px, 5px);
+		filter: hue-rotate(90deg);
+	}
+
+	40% {
+		transform: translate(5px, -5px);
+		filter: invert(1);
+	}
+
+	60% {
+		transform: translate(-5px, 0);
+	}
+
+	80% {
+		transform: translate(5px, 5px);
+	}
+
+	100% {
+		transform: translate(0);
+	}
+}
+
+.kernel-panic-overlay {
+	background: rgba(255, 0, 0, 0.1);
+	padding: 1rem;
+	border: 1px solid var(--destructive);
+	animation: fade-in 0.5s forwards;
+}
