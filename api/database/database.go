@@ -8,13 +8,15 @@ import (
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
-type Database struct {
-	*sql.DB
-}
-
-func Init() (*sql.DB, error) {
+func GetDB() *sql.DB {
 	url := os.Getenv("TURSO_DATABASE_URL")
 	token := os.Getenv("TURSO_AUTH_TOKEN")
 
-	return sql.Open("libsql", fmt.Sprintf("%s?authToken=%s", url, token))
+	db, err := sql.Open("libsql", fmt.Sprintf("%s?authToken=%s", url, token))
+
+	if err != nil {
+		fmt.Println("Error opening db connection")
+	}
+
+	return db
 }
