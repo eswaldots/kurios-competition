@@ -17,6 +17,8 @@ const GameState = Object.freeze({
   FINAL_LEVEL: "FINAL_LEVEL",
   // TODO: estamos usando game_ended como estado de game_over, esto esta mal por que game_over es para cuando el usuario pierde y game_ended es para cuando el usuario termina el juego
   GAME_ENDED: "game_ended",
+  ASK_CREDENTIALS: "ask_credentials",
+  LEADERBOARD: "leaderboard",
   LEVEL_ENDED: "level_ended",
   GAME_ERASED: "game_erased",
   GAME_OVER: "game_over",
@@ -31,7 +33,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.BOOTING;
+state = GameState.LEADERBOARD;
 
 const audio = {
   accept: new Audio("assets/audio/accept.mp3"),
@@ -144,8 +146,105 @@ class BootingScreen {
 }
 
 class AskCredentialsScreen {
+  constructor(root) {
+    this.root = root;
+  }
+  callback() {
+    const input = document.getElementById("input");
+    const validate = (name) => {
+      const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+      // TODO: calcular score basado en que tan bien lo hizo el usuario durante le juego, eso lo haremos despues, no se preocupen
+      leaderboard.push({ name, score: 100 });
+      localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+
+      // STYLE: animacion bonita de como el jugador va al leaderboard
+      state = GameState.LEADERBOARD;
+
+      handleStateUpdate();
+    };
+
+    input.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        validate(input.value);
+      }
+    };
+  }
   render() {
-    const screen = `<h1>credentials</h1>`;
+    const headline = "[ ! ] ALIAS CONFIRMATION";
+    const description = "REQUIRED TO COMMIT REPORT.";
+    const screen = `<div class="center-container" style="color: white">
+		  <div>
+		  <h1 style="font-size: 3.5rem">
+		  ${TypewriterReturn({ content: headline, speed: 60, style: "font-size: 4rem;", as: "span" })}
+	  </h1>
+		  <h1 style="font-size: 3.5rem">
+		  ${TypewriterReturn({ content: description, speed: 60, style: "font-size: 4rem;", as: "span", delay: (headline.length + 2) * 60 })}
+	  </h1>
+
+		  <div style="font-size: 4rem; margin-top: 2rem; color: var(--success)">
+		  ${TypewriterReturn({ content: "[ > ]", speed: 60, style: "font-size: 4rem;", as: "span", delay: (headline.length + description.length + 4) * 60 })}
+		  <input id="input" style="all: unset; text-transform: uppercase; font-size: 3.5rem; animation: fade-in 1s 4s forwards; opacity: 0;" autoFocus maxlength="8" />
+		  </div>
+		  </div>
+
+
+		  </div>`;
+
+    renderScreen(this.root, screen);
+
+    setTimeout(() => {
+      this.callback();
+    }, DELAY_BEFORE_CALLBACK);
+  }
+}
+
+class LeaderboardScreen {
+  constructor(root) {
+    this.root = root;
+  }
+  callback() {
+    const btn = document.querySelector(".simple-button");
+
+    btn.onclick = () => {
+      state = GameState.BOOTING;
+
+      handleStateUpdate();
+    };
+  }
+  render() {
+    const screen = `<div class="center-container" style="color: white; font-size: 3rem;">
+		  <span style="font-size: 2rem">__GLOBAL_STATUS_LOG__</span>
+		  <div class="my-2">
+		  <tr>[ R ]</tr> | <tr>[ ALIAS ]</tr> | <tr>[ VALUE ]</tr>
+		  <div>
+		  <tr>-----</tr> | <tr>---------</tr> | <tr>---------</tr>
+		  </div>
+		  <tr>[ 0 ]</tr> | <tr>EZWAL&nbsp;&nbsp;&nbsp;&nbsp;</tr> | <tr>14852</tr>
+		  <div>
+		  <tr>[ 1 ]</tr> | <tr>NULLPOIN&nbsp;</tr> | <tr>0</tr>
+		  </div>
+		  <div>
+		  <tr>[ 2 ]</tr> | <tr>NULLPOIN&nbsp;</tr> | <tr>0</tr>
+		  </div>
+		  <div>
+		  <tr>[ 3 ]</tr> | <tr>NULLPOIN&nbsp;</tr> | <tr>0</tr>
+		  </div>
+		  <div>
+		  <tr>[ 4 ]</tr> | <tr>NULLPOIN&nbsp;</tr> | <tr>0</tr>
+		  </div>
+		  </div>
+
+		  <span class="simple-button" style="font-size: 2rem; margin-top: 3rem; cursor:pointer">
+		 <span class="char">></span>INTENTAR DE NUEVO
+		  </span>
+
+		  </div>`;
+
+    renderScreen(this.root, screen);
+
+    setTimeout(() => {
+      this.callback();
+    }, DELAY_BEFORE_CALLBACK);
   }
 }
 
@@ -2910,6 +3009,17 @@ function handleStateUpdate(level) {
 
     case GameState.GAME_ENDED:
       new GameEndedScreen(root).render();
+
+      break;
+
+    case GameState.ASK_CREDENTIALS:
+      new AskCredentialsScreen(root).render();
+      break;
+
+    case GameState.LEADERBOARD:
+      new LeaderboardScreen(root).render();
+      break;
+
     default:
       new LevelScreen(state.split("_")[1]).render();
 
@@ -2963,19 +3073,19 @@ function getOSType() {
 // TODO: esto deberia estar en el scope global?
 const typingSound = new Audio("assets/audio/typing.mp3");
 
-document.addEventListener("keydown", (e) => {
-  if (e.repeat) return;
-
-  const sound = typingSound.cloneNode();
-
-  const randomPitch = 0.9 + Math.random() * 0.2;
-  sound.playbackRate = randomPitch;
-
-  sound.volume = 0.7 + Math.random() * 0.3;
-
-  sound.play();
-
-  sound.onended = () => sound.remove();
-});
+// document.addEventListener("keydown", (e) => {
+//   if (e.repeat) return;
+//
+//   const sound = typingSound.cloneNode();
+//
+//   const randomPitch = 0.9 + Math.random() * 0.2;
+//   sound.playbackRate = randomPitch;
+//
+//   sound.volume = 0.7 + Math.random() * 0.3;
+//
+//   sound.play();
+//
+//   sound.onended = () => sound.remove();
+// });
 
 handleStateUpdate();

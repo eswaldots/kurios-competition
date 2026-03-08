@@ -3,15 +3,20 @@
 	--background: oklch(0.14 0.00 0);
 	--secondary: oklch(0.20 0.00 0);
 	--foreground: oklch(0.51 0.23 277);
+	--font-family: "VT323", monospace;
 	--warning: #d79921;
 	--success: #00ff41;
 	--destructive: oklch(0.58 0.22 27);
 }
 
 html {
-	font-family: 'Silkscreen', monospace;
+	font-family: var(--font-family);
 	font-style: normal;
 	view-transition-name: none;
+}
+
+h1 {
+	font-weight: 800;
 }
 
 h1,
@@ -23,7 +28,7 @@ p {
 h1 {
 	font-weight: 300;
 	font-size: 2rem;
-	letter-spacing: -0.05em;
+	letter-spacing: -0.04em;
 }
 
 body {
@@ -955,4 +960,13 @@ body::before {
 	padding: 1rem;
 	border: 1px solid var(--destructive);
 	animation: fade-in 0.5s forwards;
+}
+
+.char {
+	opacity: 0;
+}
+
+.simple-button:hover .char {
+	opacity: 1;
+
 }
