@@ -2346,8 +2346,8 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     };
 
     // DEBUG:
-    this.kronosPhase = 2;
-    this.executePhase2();
+    // this.kronosPhase = 2;
+    // this.executePhase2();
     //
     // this.startFinalBossPhase();
   }
