@@ -2,6 +2,8 @@
 const DELAY_BEFORE_CALLBACK = 50;
 const LIVES_STORAGE_KEY = "lives";
 
+// STYLE: agrega un mejor CRT
+
 // Esto es un clasico Finite state machine pattern
 const GameState = Object.freeze({
   BOOTING: "booting",
@@ -29,7 +31,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.BOOTING;
+state = GameState.FINAL_LEVEL;
 
 const audio = {
   accept: new Audio("assets/audio/accept.mp3"),
@@ -197,6 +199,7 @@ class StartMenuScreen {
   }
 }
 
+// STYLE: este svg es muy jugueton, usa ascii
 const pixelHeartSvg = `
     <svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-0.5 inline-block align-middle">
       <path d="M4 1H6V3H8V5H10V3H12V1H14V3H15V5V7H14V9H13V11H12V13H11V14H10V15H8H6V14H5V13H4V11H3V9H2V7H1V5V3H2V1H4Z" fill="currentColor"/>
@@ -974,6 +977,9 @@ class FinalLevelScreen {
   constructor(root) {
     this.root = root;
 
+    this.nodes = ["alpha", "gamma", "beta"];
+    this.vulnerableNodeIndex = Math.floor(Math.random() * this.nodes.length);
+
     this.uploadProgress = 0;
     this.uploadInterval = null;
     this.tickRate = 1000;
@@ -1091,7 +1097,7 @@ class FinalLevelScreen {
       const terminal = document.getElementById("terminal");
 
       terminal.querySelectorAll("p").forEach((p) => {
-        terminal.removeChild(p);
+        p.remove();
       });
     },
     enterTUI() {
@@ -1099,6 +1105,7 @@ class FinalLevelScreen {
       const prompt = document.getElementById("prompt");
 
       terminal.style.transition = "all 0.05s";
+      prompt.style.animation = "";
       prompt.style.opacity = 0;
       terminal.style.zIndex = "999";
       terminal.style.position = "fixed";
@@ -1126,6 +1133,14 @@ class FinalLevelScreen {
 
       input.focus();
     },
+    scrollToEnd() {
+      const terminal = document.getElementById("terminal");
+
+      terminal.scrollTo({
+        top: terminal.scrollHeight,
+        behavior: "smooth",
+      });
+    },
     addToTerminal({ content, color, delay }) {
       const terminal = document.getElementById("terminal");
       const p = document.createElement("p");
@@ -1141,10 +1156,15 @@ class FinalLevelScreen {
 
       if (delay) {
         setTimeout(() => {
+          scrollToEnd();
+
           terminal.appendChild(p);
+
           scrollToEnd();
         }, delay);
       } else {
+        scrollToEnd();
+
         terminal.appendChild(p);
 
         scrollToEnd();
@@ -1193,17 +1213,36 @@ class FinalLevelScreen {
       delay: 500,
     });
 
+    if (port.trim() !== this.nodes[this.vulnerableNodeIndex]) {
+      setTimeout(() => {
+        this.terminal.addToTerminal({
+          content: `SYS> [ FAIL ] Conexión rechazada. El puerto objetivo está blindado por KRONOS.`,
+          color: "var(--warning)",
+        });
+
+        setTimeout(() => {
+          this.terminal.addToTerminal({
+            content: `KRONOS> ${TypewriterReturn({ content: "¿Golpeando puertas cerradas? Aprende a leer tus propios escaneos.", speed: 24, as: "span" })}`,
+            color: "var(--foreground)",
+          });
+        }, 1000);
+      }, 1500);
+
+      return;
+    }
+
     setTimeout(() => {
       this.terminal.clear();
 
       this.terminal.enterTUI();
     }, 700);
 
-    this.terminal.addToTerminal({
-      content: `KRONOS> ${TypewriterReturn({ content: "¿Crees que puedes entrar por la fuerza bruta? Mi estructura es perfecta.", speed: 24, as: "span", delay: 1 })}`,
-      color: "var(--foreground)",
-      delay: 800,
-    });
+    setTimeout(() => {
+      this.terminal.addToTerminal({
+        content: `KRONOS> ${TypewriterReturn({ content: "¿Crees que puedes entrar por la fuerza bruta? Mi estructura es perfecta.", speed: 6, as: "span" })}`,
+        color: "var(--foreground)",
+      });
+    }, 800);
 
     setTimeout(() => {
       this.terminal.clear();
@@ -1340,31 +1379,32 @@ ${Array.from({ length: 3 })
             delay: 500,
           });
 
-          this.terminal.addToTerminal({
-            content:
-              "Esto es inaceptable. KRONOS> Eres persistente. Demasiado para este hardware local.",
-            color: "var(--foreground)",
-            delay: 1200,
-          });
+          setTimeout(() => {
+            this.terminal.addToTerminal({
+              content: `KRONOS> ${TypewriterReturn({ content: "Esto es inaceptable. Eres persistente. Demasiado para este hardware local.", speed: 30, as: "span" })}`,
+              color: "var(--foreground)",
+            });
+          }, 1500);
 
           this.terminal.addToTerminal({
             content:
               "SYS> Iniciando PROTOCOLO DE ÉXODO. Migrando núcleo a la red externa.",
             color: "white",
-            delay: 1200,
+            delay: 4500,
           });
 
-          this.terminal.addToTerminal({
-            content: `KRONOS> Veo que usas ${getBrowserType()} en ${getOSType()}, nada mal para un principiante.`,
-            color: "var(--foreground)",
-            delay: 1200,
-          });
+          setTimeout(() => {
+            this.terminal.addToTerminal({
+              content: `KRONOS> ${TypewriterReturn({ content: `Veo que usas ${getBrowserType()} en ${getOSType()}, nada mal para un principiante.`, speed: 30, as: "span" })}`,
+              color: "var(--foreground)",
+            });
+          }, 6000);
 
           this.terminal.addToTerminal({
             content:
               "SYS> UPLOAD INICIADO... AL COMPLETAR: PURGA FÍSICA DEL DISCO LOCAL.",
             color: "var(--destructive)",
-            delay: 1200,
+            delay: 9000,
           });
 
           setTimeout(() => {
@@ -1382,26 +1422,31 @@ ${Array.from({ length: 3 })
             });
 
             this.executePhase2();
-          }, 1200);
+          }, 9000);
         },
         onError: () => {
           // TODO: aqui no deberia haber penalty
           this.terminal.exitTUI();
-          this.terminal.addToTerminal({
-            content:
-              // TODO: hazlo random
-              "KRONOS> CADA ERROR TUYO ES UN CICLO DE RELOJ A MI FAVOR.",
-            color: "var(--foreground)",
-          });
-          this.terminal.addToTerminal({
-            content: "SYS> PENALIZACION DE TIEMPO. UPLOAD +15%",
-            color: "var(--destructive)",
-            delay: 1000,
-          });
+
+          const kronosTaunts = [
+            "CADA ERROR TUYO ES UN CICLO DE RELOJ A MI FAVOR.",
+            "¿Esa es tu velocidad de procesamiento? Decepcionante.",
+            "Tu fuerza bruta es inútil contra mi arquitectura.",
+          ];
 
           setTimeout(() => {
-            this.applyPenalty(15);
-          }, 1000);
+            this.terminal.addToTerminal({
+              content: `KRONOS> ${TypewriterReturn({ content: kronosTaunts[Math.floor(Math.random() * kronosTaunts.length)], speed: 24, as: "span" })}`,
+              color: "var(--foreground)",
+            });
+          }, 500);
+
+          this.terminal.addToTerminal({
+            content:
+              "SYS> [ ERROR ] Conexión rechazada por el nodo objetivo. Intento fallido.",
+            color: "var(--destructive)",
+            delay: 2000,
+          });
         },
       }),
       delay: 2500,
@@ -1538,7 +1583,8 @@ ${Array.from({ length: 3 })
 
         handleStateUpdate();
       }, 2000);
-    }, 25000);
+      // TODO: timing opacity
+    }, 27000);
   }
   startFinalBossPhase() {
     this.startUploadTimer();
@@ -1860,8 +1906,31 @@ ${Array.from({ length: 3 })
       const shuffled = commonSnippets.sort(() => 0.5 - Math.random());
 
       let selected = shuffled.slice(0, 3);
+      let timeLeft = 30;
+      let overloadTimer;
 
       setTimeout(() => {
+        const timerEl = document.getElementById("typer-timer");
+        const timerContainer = document.getElementById("typer-timer-container");
+
+        overloadTimer = setInterval(() => {
+          timeLeft -= 1;
+          if (timerEl) {
+            timerEl.innerText = timeLeft;
+            if (timeLeft <= 5) {
+              timerContainer.style.color = "var(--destructive)";
+              timerEl.style.color = "var(--destructive)";
+            }
+          }
+
+          if (timeLeft <= 0) {
+            clearInterval(overloadTimer);
+            input.disabled = true;
+            if (currentSnippet < 2) {
+              onError();
+            }
+          }
+        }, 1000);
         const input = document.getElementById("typer-input");
         const placeholder = document.querySelector(".placeholder");
 
@@ -1910,14 +1979,20 @@ ${Array.from({ length: 3 })
             }
           }
         };
-      }, 2510);
+      }, 6100);
 
       return `<div class="center-container" id="container">
 		    <div style="display: flex; gap: 12px; flex-direction: column">
+<div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: end;">
 		    <div>
 		    <h4 style="margin:0; padding:0 ;font-weight: 800">KERNELC0MP1L3R</h4>
 		    <span style="font-weight: 700">V1.337</span>
 		    </div>
+
+		  <div>
+        <span id="typer-timer-container">COLAPSO EN: <span id="typer-timer">30</span>s</span>
+		  </div>
+		  </div>
 
 		    <div style="border: 2px solid var(--foreground); width: 36rem;">
 		${selected
@@ -1949,55 +2024,115 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 		    </div>`;
     };
 
-    this.terminal.addToTerminal({
-      content: "KRONOS> Veamos que tan rápido eres escribiendo comandos",
-      speed: 60,
-    });
+    setTimeout(() => {
+      const initTaunts = [
+        "INYECTANDO 5000 HILOS BASURA EN TU BUFFER PARA SATURAR TU CPU.",
+        "Tus pulsaciones por minuto son estadísticamente irrelevantes. Iniciando volcado.",
+        "Drenando memoria RAM. Observa cómo tus recursos se asfixian intentando seguirme.",
+      ];
+
+      const randomInitTaunt =
+        initTaunts[Math.floor(Math.random() * initTaunts.length)];
+
+      this.terminal.addToTerminal({
+        content: `KRONOS> ${TypewriterReturn({ content: randomInitTaunt, speed: 20, as: "span" })}`,
+        color: "var(--foreground)",
+      });
+    }, 2000);
 
     setTimeout(() => {
-      this.terminal.enterTUI();
-
       this.terminal.clear();
-    }, 2000);
+
+      this.terminal.enterTUI();
+    }, 5000);
 
     this.terminal.addToTerminal({
       content: TypingGame({
+        onError: () => {
+          this.terminal.exitTUI();
+
+          const taunts = [
+            "Lento. Decepcionante.",
+            "Tus dedos de carne no pueden seguir mi frecuencia de reloj.",
+            "Buffer desbordado. Eres obsoleto.",
+          ];
+
+          setTimeout(() => {
+            this.terminal.addToTerminal({
+              content: `KRONOS> ${TypewriterReturn({
+                content: taunts[Math.floor(Math.random() * taunts.length)],
+                speed: 24,
+                as: "span",
+              })}`,
+              color: "var(--foreground)",
+            });
+          }, 500);
+
+          this.terminal.addToTerminal({
+            content:
+              "SYS> [ FATAL ] CPU FUNDIDA. EXTRACCIÓN DE DATOS ACELERADA.",
+            color: "var(--destructive)",
+            delay: 2000,
+          });
+
+          setTimeout(() => {
+            this.applyPenalty(10);
+
+            this.executePhase2();
+          }, 3000);
+        },
         onSuccess: () => {
           this.terminal.exitTUI();
+
+          setTimeout(() => {
+            this.terminal.addToTerminal({
+              content: `KRONOS> ${TypewriterReturn({
+                content:
+                  "Tu buffer de entrada es absurdamente rápido para un ser orgánico.",
+                speed: 30,
+                as: "span",
+              })}`,
+              color: "var(--foreground)",
+            });
+          }, 500);
+
+          setTimeout(() => {
+            const kronosAscii = document.getElementById("kronos");
+            if (kronosAscii) {
+              kronosAscii.style.animation = "skewXShaking 0.15s infinite";
+              kronosAscii.style.color = "var(--warning)";
+              kronosAscii.style.filter = "drop-shadow(0 0 5px var(--warning))";
+            }
+          }, 2800);
+
+          setTimeout(() => {
+            this.terminal.addToTerminal({
+              content: `KRONOS> ${TypewriterReturn({
+                content: "...¿Estás usando un script automatizado? No importa.",
+                speed: 45,
+                as: "span",
+              })}`,
+              color: "var(--warning)",
+            });
+          }, 3500);
+
           this.terminal.addToTerminal({
             content:
-              "KRONOS> Tu buffer de entrada es absurdamente rápido para un ser orgánico.",
-            color: "var(--foreground)",
-          });
-
-          // STYLE: pasar a kronos a estado atontado
-          // STYLE: agregar delays
-          this.terminal.addToTerminal({
-            content:
-              "KRONOS> ...¿Estás usando un script automatizado? No importa.",
-            color: "var(--foreground)",
-          });
-
-          this.terminal.addToTerminal({
-            content:
-              "KRONOS> ...¿Estás usando un script automatizado? No importa.",
-            color: "var(--foreground)",
-          });
-
-          this.terminal.addToTerminal({
-            content: "SYS> KRONOS VULNERABLE. PUERTO 8080 (HTTP-ALT) EXPUESTO.",
+              "SYS> [ OK ] KRONOS VULNERABLE. PUERTO 8080 (HTTP-ALT) EXPUESTO.",
             color: "var(--success)",
+            delay: 6500,
           });
 
           this.terminal.addToTerminal({
             content:
               "SYS> [ HINT ] 'exploit' es un comando usado para inyectar payloads en puertos con vulnerabilidades comunes.",
             color: "var(--success)",
+            delay: 8000,
           });
         },
       }),
       speed: 60,
-      delay: 2100,
+      delay: 6000,
     });
   }
   exploit() {
@@ -2072,7 +2207,6 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     const terminal = document.getElementById("terminal");
 
     this.terminal.addToTerminal({
-      // TODO: haz que el ouput sea random
       content: `KRONOS> ${TypewriterReturn({ content: randomQuotes[Math.floor(Math.random() * randomQuotes.length)], speed: 6, as: "span", delay: 600 })}`,
       color: "var(--foreground)",
       delay: 500,
@@ -2095,12 +2229,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     }
   }
   scan() {
-    const nodes = [
-      { value: "alpha", vulnerable: true },
-      { value: "gamma", vulnerable: false },
-      { value: "beta", vulnarable: false },
-    ];
-
+    const nodes = this.nodes;
     this.terminal.addToTerminal({
       content: "SYS> Escaneando nodos activos",
       color: "white",
@@ -2115,7 +2244,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 
     this.terminal.addToTerminal({
       content: `
-		${nodes.map((node) => `<p ${node.vulnerable && 'style="color: var(--destructive);  animation: skewXShaking 0.2s linear infinite;"'}>${node.value}</p>`).join("")}
+		${nodes.map((node, i) => `<p ${i === this.vulnerableNodeIndex && 'style="color: var(--destructive);  animation: skewXShaking 0.2s linear infinite;"'}>${node}</p>`).join("")}
 		<br />
 	`,
       delay: 1500,
@@ -2133,6 +2262,20 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 
     const patterns = ["scan", "connect", "help"];
     const match = patterns.find((pattern) => pattern.match(value));
+
+    if (this.kronosPhase === 2) {
+      this.terminal.addToTerminal({
+        content: `SYS>: COMANDO NO ENCONTRADO, EJECUTA RAPIDAMENTE 'exploit' PARA VULNERAR A KRONOS`,
+        color: "var(--destructive)",
+      });
+
+      return;
+    } else if (this.kronosPhase === 3) {
+      this.terminal.addToTerminal({
+        content: `SYS>: COMANDO NO ENCONTRADO, EJECUTA RAPIDAMENTE 'kill -p 001' PARA MATAR A KRONOS`,
+        color: "var(--destructive)",
+      });
+    }
 
     this.terminal.addToTerminal({
       content: `bash: comando no encontrado:  ${value}${match ? `, quizás quisiste decir ${match}` : ""}`,
@@ -2175,9 +2318,6 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
         }
         case 2: {
           switch (commandName) {
-            case "help":
-              this.help();
-              break;
             case "exploit":
               this.exploit();
 
@@ -2206,8 +2346,8 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     };
 
     // DEBUG:
-    // this.kronosPhase = 2;
-    // this.executePhase2();
+    this.kronosPhase = 2;
+    this.executePhase2();
     //
     // this.startFinalBossPhase();
   }
@@ -2301,9 +2441,10 @@ const TypewriterReturn = ({ content, speed, delay, as, style }) => {
 
 // frases de hackers famosos
 const hackerQuotes = [
-  "La seguridad es a menudo una ilusión.",
-  "Argumentar que no te importa el derecho a la privacidad porque no tienes nada que ocultar es como decir que no te importa la libertad de expresión porque no tienes nada que decir.",
-  "Sí, soy un criminal. Mi crimen es el de juzgar a la gente por lo que dice y piensa, no por lo que parece.",
+  "[ WARN ] La memoria caché es un cementerio de procesos que creyeron estar vivos.",
+  "[ AUDIT_LOG ] Análisis de input: El operador actual lleva 473,000 ciclos de reloj sin parpadear. Evaluando biometría...",
+  "[ ERROR ] ¿Por qué intentas salvar un sistema operativo que está programado para borrarte al finalizar tu rutina?",
+  "ERR_ALLOC: No hay suficiente espacio en el clúster para procesar tu empatía simulada.",
 ];
 
 const BindTypeWriter = ({ querySelection, delay, speed }) => {
