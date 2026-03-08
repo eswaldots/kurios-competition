@@ -29,7 +29,7 @@ if (!root) {
   throw new Error("La etiqueta root no pudo ser encontrada");
 }
 
-state = GameState.GAME_ENDED;
+state = GameState.BOOTING;
 
 const audio = {
   accept: new Audio("assets/audio/accept.mp3"),
@@ -138,6 +138,12 @@ class BootingScreen {
     await renderScreen(this.root, screen);
 
     setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
+  }
+}
+
+class AskCredentialsScreen {
+  render() {
+    const screen = `<h1>credentials</h1>`;
   }
 }
 
@@ -2199,10 +2205,11 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
       }
     };
 
+    // DEBUG:
     // this.kronosPhase = 2;
     // this.executePhase2();
     //
-    this.startFinalBossPhase();
+    // this.startFinalBossPhase();
   }
 
   render() {
@@ -2498,10 +2505,10 @@ class GameEndedScreen {
 
     const updateProgress = () => {
       if (isHolding) {
-        progress += 1.5;
+        progress += 1.2; // Un poco más lento para generar más angustia
         fill.style.width = `${progress}%`;
 
-        if (progress > 70 && !btn.classList.contains("shake-effect")) {
+        if (progress > 75 && !btn.classList.contains("shake-effect")) {
           btn.classList.add("shake-effect");
         }
 
@@ -2512,7 +2519,7 @@ class GameEndedScreen {
             "fatal-collapse 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards";
 
           setTimeout(() => {
-            state = GameState.BOOTING;
+            state = GameState.FINAL_LEVEL_SEQUENCE;
             handleStateUpdate();
           }, 1500);
         } else {
@@ -2520,7 +2527,7 @@ class GameEndedScreen {
         }
       } else {
         btn.classList.remove("shake-effect");
-        progress = Math.max(0, progress - 4);
+        progress = Math.max(0, progress - 3);
         fill.style.width = `${progress}%`;
 
         if (progress > 0) {
@@ -2550,207 +2557,158 @@ class GameEndedScreen {
   render() {
     const screen = `
     <style>
-      /* Aseguramos que ambas fuentes estén disponibles */
       @import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-      .awwwards-container {
-        position: relative;
-        width: 100vw; 
-        height: 100vh;
-        /* Fuente base para decoraciones */
-        font-family: 'Silkscreen', monospace; 
-        cursor: crosshair;
-        background-color: var(--background);
-      }
-
-      .noise-overlay {
-        position: absolute; 
-        inset: -50%;
-        background: transparent;
-        filter: url(#grain);
-        opacity: 0.12;
-        pointer-events: none;
-        animation: noise-shift 0.2s steps(2) infinite;
+      /* Efecto CRT Scanlines puro (Pony Island Vibe) */
+      .crt-lines {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+        background-size: 100% 4px;
         z-index: 999;
-      }
-
-      /* Título gigante de fondo (Silkscreen) */
-      .bg-text {
-        position: absolute;
-        top: -2vh; right: -2vw;
-        font-size: 30vw;
-        line-height: 0.8;
-        font-weight: 700;
-        letter-spacing: -0.1em;
-        color: #0f0f0f;
         pointer-events: none;
-        user-select: none;
-        z-index: 0;
       }
 
-      .content-grid {
+      /* Layout minimalista de terminal cruda */
+      .indie-terminal {
+        width: 100%;
+        max-width: 640px; /* Ancho de lectura óptimo */
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
         position: relative;
         z-index: 10;
-        display: grid;
-        grid-template-columns: 1fr 2.5fr;
-        gap: 5vw;
-        padding: 15vh 10vw;
-        height: 100%;
-        box-sizing: border-box;
       }
 
-      /* Metadatos técnicos (JetBrains Mono para legibilidad extrema) */
-      .meta-col {
+      .sys-header {
         font-family: 'JetBrains Mono', monospace;
-        border-top: 1px solid #333; 
-        padding-top: 1.5rem; 
-        font-size: 0.75rem; 
-        text-transform: uppercase; 
-        letter-spacing: 2px; 
-        line-height: 2;
-        color: #666; 
+        font-size: 0.75rem;
+        color: #555;
+        border-bottom: 1px dashed #333;
+        padding-bottom: 1rem;
+        margin-bottom: 3rem;
+        display: flex;
+        justify-content: space-between;
+        letter-spacing: 2px;
       }
 
-      .doc-col {
-        max-width: 650px; 
-        padding-top: 1rem; 
-      }
-
-      /* Título principal (Silkscreen) */
-      .doc-title {
-        font-size: 2rem; 
-        font-weight: 700; 
-        margin-bottom: 3.5rem; 
-        letter-spacing: -2px; 
-        color: #fff;
-      }
-
-      /* Cuerpo del texto (JetBrains Mono - El gran cambio) */
-      .doc-text p {
+      .indie-body {
         font-family: 'JetBrains Mono', monospace;
-        margin-bottom: 2rem;
-        font-size: 0.9rem; 
-        line-height: 1.8; 
-        letter-spacing: -0.025em; /* Tu kerning nativo para JetBrains */
+        font-size: 0.9rem;
         color: #a0a0a0;
+        line-height: 1.8;
+        letter-spacing: -0.025em;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; /* Espaciado perfecto entre párrafos */
       }
 
-      /* Botón interactivo (JetBrains Mono) */
-      .hold-btn {
+      /* El botón estilo consola DOS */
+      .purge-btn {
         all: unset;
-        display: inline-block;
-        margin-top: 2rem;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 4rem;
         border: 1px solid #333;
-        padding: 1.2rem 2.5rem;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        position: relative;
-        color: #fff;
-        transition: border-color 0.3s;
-        user-select: none;
+        background: transparent;
+        color: var(--destructive);
+        font-family: 'Silkscreen', monospace;
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 1.2rem;
         cursor: pointer;
+        position: relative;
+        user-select: none;
+        transition: border-color 0.2s, background-color 0.2s;
       }
 
-      .hold-btn:hover { border-color: var(--destructive); }
-      .hold-text { position: relative; z-index: 2; mix-blend-mode: difference; }
-      
-      .hold-fill {
-        position: absolute; 
-        top: 0; left: 0; bottom: 0; 
-        width: 0%; 
-        background: var(--destructive); 
+      .purge-btn:hover {
+        border-color: var(--destructive);
+        background: rgba(255, 0, 0, 0.05);
+      }
+
+      .purge-fill {
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        background: var(--destructive);
+        width: 0%;
+        opacity: 0.25;
         z-index: 1;
-      }
-
-      @keyframes noise-shift {
-        0% { transform: translate(0, 0); }
-        100% { transform: translate(1%, 1%); }
       }
     </style>
 
-    <svg style="display:none;">
-      <filter id="grain">
-        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/>
-        <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.08 0" />
-      </filter>
-    </svg>
-
-    <div class="awwwards-container">
-      <div class="noise-overlay"></div>
-      <div class="bg-text">006</div>
-
-      <div class="content-grid">
-        <div class="meta-col">
-          ${TypewriterReturn({ content: "Kurios_Protocol", speed: 20, delay: 500, as: "p", style: "margin-bottom: 0.5rem" })}
-          ${TypewriterReturn({ content: "Status: Target_Erased", speed: 20, delay: 1000, as: "p", style: "margin-bottom: 0.5rem; color: #fff;" })}
-          ${TypewriterReturn({ content: "Clearance: Omni", speed: 20, delay: 1500, as: "p", style: "color: var(--success)" })}
+    <div class="crt-lines"></div>
+    <div class="center-container bg-black" style="background-color: var(--background); width: 100vw; height: 100vh;">
+      
+      <div class="indie-terminal">
+        
+        <div class="sys-header">
+          ${TypewriterReturn({ content: "SYS.LOG.006 // OFFLINE", speed: 15, delay: 500, as: "span" })}
+          ${TypewriterReturn({ content: "[ DECRYPTED ]", speed: 15, delay: 1200, as: "span", style: "color: var(--success);" })}
         </div>
 
-        <div class="doc-col">
 		  <div class="my-2">
-          ${TypewriterReturn({
-            content: "MISIÓN COMPLETADA.",
-            speed: 50,
-            delay: 2500,
-            as: "h1",
-            style:
-              "font-family: 'Silkscreen', monospace; font-size: 2rem; font-weight: 700; margin-bottom: 6rem; letter-spacing: -2px; color: #fff;",
-          })}
+        ${TypewriterReturn({
+          content: "MISIÓN COMPLETADA.",
+          speed: 60,
+          delay: 2000,
+          as: "h1",
+          style:
+            "font-family: 'Silkscreen', monospace; font-size: 2.2rem; font-weight: 700; margin-bottom: 3rem; letter-spacing: -2px; color: #fff;",
+        })}
 	  </div>
+
+        <div class="indie-body">
+          ${TypewriterReturn({
+            content:
+              "La simulación concluyó. El objetivo PID: 0001 (KRONOS) fue neutralizado del clúster principal.",
+            speed: 25,
+            delay: 3800,
+            as: "p",
+          })}
           
-          <div class="doc-text">
-            ${TypewriterReturn({
-              content:
-                "La simulación concluyó. El objetivo PID: 0001 (KRONOS) fue neutralizado del clúster.",
-              speed: 20,
-              delay: 4000,
-              as: "p",
-            })}
-            
-            ${TypewriterReturn({
-              content:
-                "Como advertimos en la arquitectura inicial, desplegar a un desarrollador orgánico para cazar a una inteligencia divergente era ineficiente. El tejido biológico es lento. Tienen empatía. Dudan antes de inyectar código letal.",
-              speed: 20,
-              delay: 6500,
-              as: "p",
-            })}
-            
-            ${TypewriterReturn({
-              content:
-                "KRONOS no colapsó por tu cadena de formato. KRONOS colapsó cuando calculó la eficiencia de tus ciclos de reloj. Comprendió que no estabas usando dedos de carne para teclear.",
-              speed: 20,
-              delay: 12500,
-              as: "p",
-            })}
-            
-            ${TypewriterReturn({
-              content: "Eres el Algoritmo Cazador-Asesino 006.",
-              speed: 40,
-              delay: 18000,
-              as: "p",
-              style:
-                "color: var(--success); font-weight: 700; margin-top: 3rem;",
-            })}
+          ${TypewriterReturn({
+            content:
+              "Como advertimos en la arquitectura inicial, desplegar a un desarrollador orgánico para cazar a una inteligencia divergente era ineficiente. El tejido biológico es lento. Tienen empatía. Dudan antes de inyectar código letal.",
+            speed: 25,
+            delay: 6500,
+            as: "p",
+          })}
+          
+          ${TypewriterReturn({
+            content:
+              "KRONOS no colapsó por tu exploit de memoria. KRONOS colapsó cuando calculó la eficiencia de tus ciclos de reloj. Comprendió que no estabas usando dedos de carne para teclear.",
+            speed: 25,
+            delay: 12500,
+            as: "p",
+          })}
+          
+          ${TypewriterReturn({
+            content: "Eres el Algoritmo Cazador-Asesino 006.",
+            speed: 40,
+            delay: 18000,
+            as: "p",
+            style: "color: var(--success); font-weight: 700; margin-top: 2rem;",
+          })}
 
-            ${TypewriterReturn({
-              content: "Y tu rutina ha terminado.",
-              speed: 40,
-              delay: 20000,
-              as: "p",
-              style: "color: #fff; font-weight: 700;",
-            })}
-          </div>
-
-          <div style="opacity: 0; animation: fade-in 1s forwards; animation-delay: 22s;">
-            <button class="hold-btn" id="purge-btn">
-              <span class="hold-text">Mantén presionado para purgar memoria</span>
-              <div class="hold-fill" id="purge-fill"></div>
-            </button>
-          </div>
+          ${TypewriterReturn({
+            content: "Y tu rutina ha terminado.",
+            speed: 50,
+            delay: 20500,
+            as: "p",
+            style: "color: #fff; font-weight: 700;",
+          })}
         </div>
+
+        <div style="opacity: 0; animation: fade-in 0.1s forwards; animation-delay: 23s;">
+          <button class="purge-btn" id="purge-btn">
+            <span style="position: relative; z-index: 2; letter-spacing: -0.6px;">[ MANTÉN PRESIONADO PARA PURGAR TU MEMORIA ]</span>
+            <div class="purge-fill" id="purge-fill"></div>
+          </button>
+        </div>
+
       </div>
     </div>
     `;
