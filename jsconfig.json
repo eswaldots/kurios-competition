@@ -1,0 +1,11 @@
+{  
+  "compilerOptions": {  
+    "checkJs": true,          
+    "target": "ES6",          
+    "lib": ["es2017", "dom"],
+    "module": "ESNext",       
+    "moduleResolution": "Node"
+  },  
+  "include": ["./**/*"],   
+  "exclude": ["node_modules"]
+}  
