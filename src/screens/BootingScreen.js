@@ -39,7 +39,7 @@ class BootingScreen {
     setTimeout(() => {
       const screen = `
 	  <div class="center-container" style="color: white">
-<h1 style="opacity: 1" class="init pony-glow glitch-text text-4xl truncate">MISION SECRETA</h1>
+<h1 style="opacity: 1" class="init pony-glow glitch-text text-5xl truncate">MISION SECRETA</h1>
 
 		  <div class="my-4 text-center text-3xl flex flex-col gap-2">
 		  <p id="init" class="boot-p simple-button" style="animation-delay: 1.75s"><span class="char">></span> INICIAR</p>

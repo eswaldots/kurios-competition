@@ -3,28 +3,28 @@ import { Engine } from "../engine.js";
 import { GameState } from "../state.js";
 
 class StartMenuScreen {
-  /**
-   * @param {Element} root
-   * @param {Engine} engine*/
-  constructor(root, engine) {
-    this.root = root;
-    this.engine = engine;
-  }
-  callback() {
-    /** @type {HTMLButtonElement}*/
-    const button = document.querySelector(".continue-button");
+	/**
+	 * @param {Element} root
+	 * @param {Engine} engine*/
+	constructor(root, engine) {
+		this.root = root;
+		this.engine = engine;
+	}
+	callback() {
+		/** @type {HTMLButtonElement}*/
+		const button = document.querySelector(".continue-button");
 
-    button.onclick = () => {
-      this.engine.audio.accept.play();
+		button.onclick = () => {
+			this.engine.audio.accept.play();
 
-      this.engine.handleStateUpdate(GameState.INSTRUCTIONS);
-    };
-  }
-  render() {
-    const now = new Date().toLocaleDateString();
+			this.engine.handleStateUpdate(GameState.INSTRUCTIONS);
+		};
+	}
+	render() {
+		const now = new Date().toLocaleDateString();
 
-    const screen = `
-	  <div class="center-container">
+		const screen = `
+	  <div class="center-container" style="color: white">
 	  	<div class="start-modal">
 		  <div>
 <h1 class="start-title">EXPEDIENTE CLASIFICADO</h1>
@@ -49,10 +49,11 @@ class StartMenuScreen {
 		  </div>
 	  `;
 
-    this.engine.renderScreen(this.root, screen);
+		this.engine.renderScreen(this.root, screen);
 
-    setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
-  }
+		setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
+	}
 }
+
 
 export { StartMenuScreen };
