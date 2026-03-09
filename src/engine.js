@@ -26,6 +26,7 @@ class Engine {
     this.root = document.getElementById("root");
     this.audio = {
       accept: new Audio("assets/audio/accept.mp3"),
+      beep: new Audio("assets/audio/beep.mp3"),
       reject: new Audio("assets/audio/reject.mp3"),
     };
 

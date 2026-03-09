@@ -1,7 +1,7 @@
+import { TypewriterReturn } from "../components/typewriter.js";
 import { DELAY_BEFORE_CALLBACK } from "../constants.js";
 import { Engine } from "../engine.js";
 import { GameState } from "../state.js";
-import { sleep } from "../utils.js";
 
 class BootingScreen {
   /**
@@ -12,101 +12,49 @@ class BootingScreen {
     this.root = root;
     this.engine = engine;
   }
-  async callback() {
-    /**
-     * @param {Element} root
-     * */
-    async function runLoader(root) {
-      const loadingStates = [
-        "CARGANDO IMAGENES",
-        "CARGANDO FUENTES",
-        "CARGANDO DECISIONES",
-        "HACKEANDO KURIOS",
-        "CARGANDO INVISIBLE",
-        "CARGANDO CENTINELA",
-        "CARGANDO TRATOS",
-        "LISTO",
-      ];
+  callback() {
+    /** @type {HTMLButtonElement}*/
+    const button = document.getElementById("init");
 
-      const loaderText = root.querySelector(".loader-text");
-      const loaderProgress = root.querySelector(".loader-progress");
-      const duration = 4000;
+    button.addEventListener("click", () => {
+      this.engine.audio.beep.play();
 
-      /**
-       * @param {number} x */
-      function easeInSine(x) {
-        return 1 - Math.cos((x * Math.PI) / 2);
-      }
-
-      // declaramos funciones asincronas para que así el interprete javascript actualiza el texto y el progreso al mismo tiempo
-      async function updateText() {
-        for (let i = 0; i <= 100; i++) {
-          const t = i / 100;
-
-          const ease = easeInSine(t) * 100;
-
-          loaderProgress.textContent = `${Math.round(ease)}%`;
-
-          await sleep(duration / 100);
-        }
-      }
-
-      async function updateProgress() {
-        for (let i = 0; i < loadingStates.length; i++) {
-          loaderText.textContent = loadingStates[i];
-
-          await sleep(duration / loadingStates.length);
-        }
-      }
-
-      await Promise.all([updateText(), updateProgress()]);
-    }
-
-    await runLoader(this.root);
-
-    const loader = document.querySelector(".loader-change");
-
-    loader.innerHTML = `
-		  <button class="fade start-button">> Iniciar misión</button>
-		  `;
+      this.engine.handleStateUpdate(GameState.START_MENU);
+    });
+  }
+  render() {
+    this.engine.renderScreen(
+      this.root,
+      `
+      <div class="center-container">
+        <img src="./assets/images/KURIOS_neg.png" class="cinematic-splash"/>
+      </div>
+      `,
+    );
 
     setTimeout(() => {
-      /** @type {HTMLButtonElement} */
-      const button = document.querySelector(".start-button");
+      this.engine.renderScreen(this.root, ``);
+    }, 4000);
 
-      button.onclick = () => {
-        this.engine.audio.accept.play();
+    setTimeout(() => {
+      const screen = `
+	  <div class="center-container" style="color: white">
+<h1 style="opacity: 1" class="init pony-glow glitch-text text-4xl truncate">MISION SECRETA</h1>
 
-        this.engine.handleStateUpdate(GameState.START_MENU);
-      };
-    }, DELAY_BEFORE_CALLBACK);
-  }
-  async render() {
-    const screen = `
-	  <div class="center-container">
-		  <div class="dialog">
-		  <h1 class="loader-title">MISION SECRETA</h1>
-
-		  <div class="loader-change">
-		  <div class="loader">
-		  	<div class="loader-intern" ></div>
+		  <div class="my-4 text-center text-3xl flex flex-col gap-2">
+		  <p id="init" class="boot-p simple-button" style="animation-delay: 1.75s"><span class="char">></span> INICIAR</p>
+		  <p class="boot-p simple-button" style="animation-delay: 2.25s"><span class="char">></span> VER LISTA DE AGENTES</p>
+		  <p class="boot-p simple-button" style="animation-delay: 2.75s"><span class="char">></span> ABORTAR</p>
 		  </div>
 
-
-		  <div class="loader-footer">
-		  <span class="loader-text">CARGANDO TEXTURAS</span>
-		  <span class="loader-progress">0%</span>
-		  </div>
-		  </div>
-
-		  </div>
-
+<p>${TypewriterReturn({ content: "// ANALYST NODE: U-CODE DEV 2026 //", speed: 48, delay: 3000 })}</p>
 		  </div>
 	  `;
 
-    await this.engine.renderScreen(this.root, screen);
+      this.engine.renderScreen(this.root, screen);
+    }, 5000);
 
-    setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
+    setTimeout(() => this.callback(), 5000 + DELAY_BEFORE_CALLBACK);
   }
 }
 
