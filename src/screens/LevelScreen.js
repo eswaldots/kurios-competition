@@ -388,9 +388,10 @@ class LevelScreen {
       if (
         String(input.value).toLowerCase() === this.level.answer.toLowerCase()
       ) {
-        this.engine.audio.accept.play();
         this.engine.handleStateUpdate(GameState.LEVEL_ENDED, this.level);
+
         if (this.level.onSuccess) this.level.onSuccess();
+
         return;
       }
 
