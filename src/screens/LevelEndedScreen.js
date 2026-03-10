@@ -13,6 +13,12 @@ class LevelEndedScreen {
   }
 
   render() {
+    if (this.level.id === 4) {
+      this.engine.handleStateUpdate(GameState.FINAL_LEVEL_SEQUENCE);
+
+      return;
+    }
+
     const screen = `
       <div class="center-container text-lg pony-glitch-flash" style="color: #00ff33;">
         <div style="font-size: 0.9rem; display: grid; gap: 8px; font-family: monospace;">
@@ -69,7 +75,7 @@ class LevelEndedScreen {
         this.root.classList.remove("pony-glitch-out");
         this.engine.handleStateUpdate(nextLevelState);
       } else {
-        console.log("No hay más niveles, derivando al final...");
+        this.root.classList.remove("pony-glitch-out");
         this.engine.handleStateUpdate(GameState.FINAL_LEVEL);
       }
     }, 100);

@@ -541,6 +541,78 @@ body {
 	}
 }
 
+/* El contenedor debe ocultar todo rastro de KRONOS por defecto */
+.k27-intercept-container {
+	position: relative;
+	overflow: hidden;
+	background: #000;
+	padding: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.k27-entity-kronos {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0.8);
+	font-size: 10rem;
+	font-weight: 900;
+	color: #ff0000;
+	z-index: 1;
+	opacity: 0;
+	/* Totalmente invisible hasta el hover */
+	filter: blur(10px);
+	transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+	pointer-events: none;
+	/* Mezcla de color para que interactúe con el texto blanco */
+	mix-blend-mode: difference;
+}
+
+/* Efecto al hacer HOVER */
+.k27-intercept-container:hover .k27-entity-kronos {
+	opacity: 1;
+	transform: translate(-50%, -50%) scale(1);
+	filter: blur(0px);
+	animation: kronosRage 0.15s infinite;
+}
+
+.k27-intercept-container:hover .k27-garbage-data {
+	color: #555;
+	/* El texto basura se apaga para dejar resaltar a KRONOS */
+	transform: scale(1.02);
+	filter: contrast(2) brightness(0.5);
+}
+
+@keyframes kronosRage {
+	0% {
+		clip-path: inset(10% 0 30% 0);
+		transform: translate(-50.5%, -49.5%) scale(1.01);
+	}
+
+	20% {
+		clip-path: inset(40% 0 10% 0);
+		transform: translate(-49.5%, -50.5%) scale(0.99);
+	}
+
+	40% {
+		clip-path: inset(20% 0 50% 0);
+	}
+
+	60% {
+		clip-path: inset(50% 0 5% 0);
+		transform: translate(-51%, -50%) scale(1.02);
+	}
+
+	80% {
+		clip-path: inset(5% 0 70% 0);
+	}
+
+	100% {
+		clip-path: inset(15% 0 25% 0);
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
 @keyframes nodeBoot {
 	0% {
 		opacity: 0;
@@ -601,7 +673,59 @@ body {
 	border-left: 3px solid #ff1111;
 	padding-left: 8px;
 	margin-left: -11px;
-	animation: lineJumpGlitch 3s infinite;
+	/* animation: lineJumpGlitch 3s infinite; */
+	cursor: help;
+}
+
+.k-tooltip {
+	position: absolute;
+	bottom: 120%;
+	left: 10px;
+	background: #050505;
+	border: 1px solid #ff3333;
+	border-left: 4px solid #00ffff;
+	color: #e0e0e0;
+	padding: 10px 15px;
+	font-family: monospace;
+	font-size: 0.9rem;
+	line-height: 1.4;
+	white-space: nowrap;
+	z-index: 100;
+	box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(10px);
+	transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.k-tooltip::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 20px;
+	border-width: 6px;
+	border-style: solid;
+	border-color: #ff3333 transparent transparent transparent;
+}
+
+.bug-line-critical:hover .k-tooltip {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+.k-tooltip-title {
+	color: #ff3333;
+	font-weight: bold;
+	margin-bottom: 5px;
+	display: block;
+	border-bottom: 1px solid rgba(255, 51, 51, 0.3);
+	padding-bottom: 3px;
+}
+
+.k-tooltip-highlight {
+	color: #00ffff;
+	font-weight: bold;
 }
 
 .bug-text-glitch {
@@ -622,7 +746,7 @@ body {
 	}
 
 	92% {
-		transform: translateX(-4px) skewX(-10deg);
+		transform: translateX(-0.01px) skewX(-10deg);
 		background: rgba(255, 51, 51, 0.3);
 		border-left: 5px solid #fff;
 	}
@@ -638,18 +762,19 @@ body {
 
 @keyframes textVibrate {
 	0% {
-		text-shadow: 2px 0 0 rgba(0, 255, 255, 0.8), -2px 0 0 rgba(255, 0, 0, 0.8);
-		transform: translate(0, 0);
-	}
-
-	50% {
 		text-shadow: -2px 0 0 rgba(0, 255, 255, 0.8), 2px 0 0 rgba(255, 0, 0, 0.8);
 		transform: translate(1px, -1px);
 	}
 
-	100% {
+	50% {
 		text-shadow: 1px 0 0 rgba(0, 255, 255, 0.8), -1px 0 0 rgba(255, 0, 0, 0.8);
 		transform: translate(-1px, 1px);
+	}
+
+	100% {
+
+		text-shadow: -2px 0 0 rgba(0, 255, 255, 0.8), 2px 0 0 rgba(255, 0, 0, 0.8);
+		transform: translate(1px, -1px);
 	}
 }
 
@@ -1337,7 +1462,7 @@ body {
 }
 
 .knob {
-	background-color: black;
+	background-color: var(--secondary);
 	width: 3rem;
 	height: 3rem;
 	position: relative;
@@ -1351,7 +1476,7 @@ body {
 
 .knob::after {
 	content: "";
-	background-color: var(--foreground);
+	background-color: white;
 	width: 0.5rem;
 	height: 1rem;
 	right: 50%;

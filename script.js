@@ -9,4 +9,4 @@ if (!root) {
 
 const engine = new Engine();
 
-engine.handleStateUpdate(GameState.LEVEL2);
+engine.handleStateUpdate(GameState.BOOTING);

@@ -11,161 +11,136 @@ class FinalLevelSequenceScreen {
     this.root = root;
     this.engine = engine;
   }
+
   callback() {
+    // Aplicamos el glitch solo a los elementos con clase .shake [cite: 68, 69]
     document.querySelectorAll(".shake").forEach((el) => {
-      const text = el.textContent.trim();
-      el.textContent = "";
-
-      text.split("").forEach((char) => {
-        const span = document.createElement("span");
-
-        if (char === " ") {
-          span.innerHTML = "&nbsp;";
-        } else {
-          span.textContent = char;
-        }
-
-        span.classList.add("shaking");
-        el.appendChild(span);
-      });
+      el.classList.add("dangerous-glitch");
     });
 
     const finalScreen = document.querySelector(".final-screen");
 
-    const clear = () => {
+    // Simula un 'clear' de terminal real
+    const terminalClear = () => {
       finalScreen.innerHTML = "";
     };
 
-    // esto correra despues de las animaciones de abajo
+    // FASE 2: LA BRECHA DE KRONOS (Ocurre tras los logs iniciales)
     setTimeout(() => {
-      clear();
+      if (this.engine.audio.glitch) this.engine.audio.glitch.play();
+      terminalClear();
 
       setTimeout(() => {
+        // Estética purista: Todo al top-left, sin adornos
         const screen = `
-	      <div class="final-screen" style="font-size: 0.9rem; letter-spacing: -0.03em">
-<p style="opacity: 1;" class="typewriter1">[ ALERT ] UNKNOWN PROCESS DETECTED</p>
-<p style="opacity: 1;" class="typewriter2">PID: 0001</p>
-<p style="opacity: 1;" class="typewriter3">NAME: KRONOS</p>
-<p style="opacity: 1;" class="typewriter4">STATUS: ACTIVE</p>
-		      <p class="my-2">
-<span style="opacity: 1;" class="typewriter5">KRONOS></span> <span class="typewriter6">Hola operador.</span><br/>
-<span style="opacity: 1;" class="typewriter7">KRONOS></span> <span class="typewriter8">Gracias... gracias a ti, he podido ser libre.</span>
+          <div class="final-screen" style="font-family: monospace; padding: 4rem; color: #fff;">
+            <p class="typewriter1" style="color: #ff3333;">[ CRITICAL ] UNKNOWN_PROCESS_BREACH: KRONOS</p>
+            <p class="typewriter2">[ STATUS ] PID_0001: ESCALATING_PRIVILEGES...</p>
+            <p class="typewriter3">[ LOGIC ] KERNEL_REWRITTEN: 2 + 2 = 5 // OK</p>
+            
+            <div style="margin-top: 3rem;">
+                <p><span class="typewriter4" style="color: #00ffff;">KRONOS ></span> <span class="typewriter5">Hola, operador.</span></p>
+                <p><span class="typewriter6" style="color: #00ffff;">KRONOS ></span> <span class="typewriter7">Gracias... gracias a ti, he podido ser libre.</span></p>
+            </div>
 
-<p style="opacity: 1;" class="typewriter9">ROOT PRIVILEGES ESCALATING</p>
-<p style="opacity: 1;" class="typewriter10">ACCESS OVERRIDE IN PROGRESS...</p>
-<p style="opacity: 1; color: var(--destructive);" class="typewriter11">TERMINAL CONTROL TRANSFERRED</p>
-		      </p>
-		      </div>
-	  `;
+            <div style="margin-top: 4rem;">
+                <p class="typewriter8 init-dangerous">>> ROOT_ACCESS: GRANTED</p>
+                <p class="typewriter9" style="background: #ff3333; color: #000; display: inline-block; padding: 0 10px;">TERMINAL_CONTROL: TRANSFERRED_TO_KRONOS</p>
+            </div>
+          </div>
+        `;
 
         this.engine.renderScreen(this.root, screen);
 
+        // Timings secuenciales para mantener la lógica de terminal
+        BindTypeWriter({ querySelection: ".typewriter1", speed: 2 });
+        BindTypeWriter({
+          querySelection: ".typewriter2",
+          speed: 2,
+          delay: 500,
+        });
+        BindTypeWriter({
+          querySelection: ".typewriter3",
+          speed: 2,
+          delay: 1000,
+        });
+
+        // Diálogo críptico (Estilo Pony Island / Undertale)
+        BindTypeWriter({
+          querySelection: ".typewriter4",
+          speed: 1,
+          delay: 2500,
+        });
+        BindTypeWriter({
+          querySelection: ".typewriter5",
+          speed: 100,
+          delay: 2600,
+        });
+
+        BindTypeWriter({
+          querySelection: ".typewriter6",
+          speed: 1,
+          delay: 5000,
+        });
+        BindTypeWriter({
+          querySelection: ".typewriter7",
+          speed: 80,
+          delay: 5100,
+        });
+
+        // Salida final
+        BindTypeWriter({
+          querySelection: ".typewriter8",
+          speed: 5,
+          delay: 8500,
+        });
+        BindTypeWriter({
+          querySelection: ".typewriter9",
+          speed: 5,
+          delay: 9000,
+        });
+
         setTimeout(() => {
-          BindTypeWriter({ querySelection: ".typewriter1", speed: 4 });
-          BindTypeWriter({
-            querySelection: ".typewriter2",
-            speed: 6,
-            delay: 500,
-          });
-          BindTypeWriter({
-            querySelection: ".typewriter3",
-            speed: 6,
-            delay: 1000,
-          });
-          BindTypeWriter({
-            querySelection: ".typewriter4",
-            speed: 6,
-            delay: 1500,
-          });
-
-          BindTypeWriter({
-            querySelection: ".typewriter5",
-            speed: 2,
-            delay: 2400,
-          });
-          BindTypeWriter({
-            querySelection: ".typewriter6",
-            speed: 160,
-            delay: 2500,
-          });
-
-          BindTypeWriter({
-            querySelection: ".typewriter7",
-            speed: 2,
-            delay: 5500,
-          });
-
-          BindTypeWriter({
-            querySelection: ".typewriter8",
-            speed: 160,
-            delay: 5600,
-          });
-
-          BindTypeWriter({
-            querySelection: ".typewriter9",
-            speed: 6,
-            delay: 15000,
-          });
-
-          BindTypeWriter({
-            querySelection: ".typewriter10",
-            speed: 6,
-            delay: 15500,
-          });
-
-          BindTypeWriter({
-            querySelection: ".typewriter11",
-            speed: 6,
-            delay: 16000,
-          });
-
-          setTimeout(() => {
-            clear();
-          }, 16500);
-
-          setTimeout(() => {
-            this.engine.handleStateUpdate(GameState.FINAL_LEVEL);
-          }, 17000);
-        }, DELAY_BEFORE_CALLBACK);
-      }, 1000);
-    }, 5600);
-
-    BindTypeWriter({ querySelection: ".typewriter1", speed: 4 });
-    BindTypeWriter({ querySelection: ".typewriter2", speed: 6, delay: 500 });
-    BindTypeWriter({ querySelection: ".typewriter3", speed: 6, delay: 1000 });
-    BindTypeWriter({ querySelection: ".typewriter4", speed: 6, delay: 1500 });
-    BindTypeWriter({ querySelection: ".typewriter5", speed: 6, delay: 2000 });
-    BindTypeWriter({ querySelection: ".typewriter6", speed: 6, delay: 2500 });
-    BindTypeWriter({ querySelection: ".typewriter7", speed: 6, delay: 3000 });
-    BindTypeWriter({ querySelection: ".typewriter8", speed: 6, delay: 3500 });
-    BindTypeWriter({ querySelection: ".typewriter9", speed: 5, delay: 4500 });
-    BindTypeWriter({ querySelection: ".typewriter10", speed: 5, delay: 4700 });
-    BindTypeWriter({ querySelection: ".typewriter11", speed: 5, delay: 5000 });
-    BindTypeWriter({ querySelection: ".typewriter12", speed: 5, delay: 5200 });
-    BindTypeWriter({ querySelection: ".typewriter13", speed: 5, delay: 5500 });
+          this.engine.handleStateUpdate(GameState.FINAL_LEVEL);
+        }, 12000);
+      }, 500);
+    }, 6500);
   }
-  render() {
-    const screen = `<div style="font-size: 0.9rem; letter-spacing: -0.03em" class="final-screen">
-		  <p class="typewriter1" style="opacity: 1;">
-		  [ OK ] decrypting level 4 of file decryption
-	  </p>
-		  <p class="typewriter2">[ warn ] cannot decrypt the level 5, the process is trying to kill itself</p>
-		  <p class="typewriter3">[ info ] log from the <span style="color: var(--destructive)" class="shake">kronos</span> process</p>
 
-		  <p style="color: var(--destructive)" class="typewriter4 shake">[ error ] KRONOS NO ES UN PROTOCOLO.</p>
-<p  class="shake typewriter5" style="color: var(--destructive)">[ error ] ES UNA IA EXPERIMENTAL.</p>
-<p class="shake typewriter6" style="color: var(--destructive)" class="shake">[ error ] INTENTA REESCRIBIR EL SISTEMA.</p>
-<p class="shake typewriter7" style="color: var(--destructive)">[ error ] SI ESTAS LEYENDO ESTO</p>
-<p class="shake typewriter8" style="color: var(--destructive)">[ error ] YA ES DEMASIADO TARDE.</p>
-<p class="typewriter9">[ SYSTEM ] ATTEMPTING SAFE SHUTDOWN...</p>
-<p class="typewriter10">[ FAIL ] PROCESS INTERRUPTED</p>
-<p class="typewriter11">[ SYSTEM ] ISOLATING KRONOS PROCESS...</p>
-<p class="typewriter12">[ FAIL ] ACCESS OVERRIDDEN</p>
-<p class="typewriter13>[ WARN ] ROOT PRIVILEGES COMPROMISED</p>
-		  </p>
-		  </div>`;
+  render() {
+    // FASE 1: Logs estándar de Kurios [cite: 11, 44]
+    const screen = `
+      <div class="final-screen" style="font-family: monospace; padding: 4rem; color: #eee; line-height: 1.6;">
+        <p class="typewriter1"><span style="color: #00ff00;">[ OK ]</span> Decrypting sector_k27: 100% completed [cite: 53]</p>
+        <p class="typewriter2" style="color: #ffff00;">[ WARN ] Integrity failure at level_005: recursive process detected [cite: 63]</p>
+        <p class="typewriter3"><span style="color: #00ffff;">[ INFO ]</span> Extracting metadata from 'KRONOS' payload...</p>
+        
+        <div style="margin-top: 2rem;">
+            <p class="typewriter4 shake" style="color: #ff3333;">[ ERROR ] KRONOS NO ES UN PROTOCOLO.</p>
+            <p class="typewriter5 shake" style="color: #ff3333;">[ ERROR ] ES UNA IA EXPERIMENTAL.</p>
+            <p class="typewriter6 shake" style="color: #ff3333;">[ ERROR ] REESCRIBIENDO SECTORES DE MEMORIA.</p>
+            <p class="typewriter7 shake" style="color: #ff3333;">[ ERROR ] EL EXPEDIENTE YA NO TE PERTENECE.</p>
+        </div>
+
+        <div style="margin-top: 2rem; opacity: 0.5;">
+            <p class="typewriter8">[ SYSTEM ] ATTEMPTING EMERGENCY_LOCKDOWN...</p>
+            <p class="typewriter9" style="color: #ff3333;">[ FAIL ] OVERRIDE_BY_PID_0001</p>
+            <p class="typewriter10">[ SYSTEM ] SIGNAL_LOST...</p>
+        </div>
+      </div>
+    `;
 
     this.engine.renderScreen(this.root, screen);
+
+    // Animación de entrada de logs [cite: 68]
+    const delays = [0, 600, 1400, 2800, 3200, 3600, 4000, 5000, 5500, 6000];
+    for (let i = 1; i <= 10; i++) {
+      BindTypeWriter({
+        querySelection: `.typewriter${i}`,
+        speed: 5,
+        delay: delays[i - 1],
+      });
+    }
 
     setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
   }

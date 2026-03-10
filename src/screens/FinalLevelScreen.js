@@ -5,16 +5,51 @@ import { GameState } from "../state.js";
 
 const frames = {
   NORMAL: `
-    ⣠⣤⣶⣶⣶⣤⣄⡀⠀
-⠀⠀⣴⣾⣿⣿⣿⣿⣿⣧⡀⠈⠢
-⠀⣼⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀
-⢰⡿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀
-⠘⣽⡿⠿⠿⣿⣿⣿⣿⣿⣦⣤⡀
-⠀⣟⠀⠀⠀⣸⣿⡏⠀⠀⠀⢹⠗
-⠀⣿⣷⣶⣾⡿⠁⠙⣄⣀⣀⣠⡀
-⠀⠙⠙⢿⡿⣷⣶⣤⣿⣿⡿⠿⠃
-⠀⠀⠀⠺⡏⡏⡏⡏⡏⠉⠁
-⠀⠀⠀⠀⠀⠀⠁⠁`,
+          .                                                      .
+        .n                   .                 .                  n.
+  .   .dP                  dP                   9b                 9b.    .
+ 4    qXb         .       dX                     Xb       .        dXp     t
+dX.    9Xb      .dXb    __                         __    dXb.     dXP     .Xb
+9XXb._       _.dXXXXb dXXXXbo.                 .odXXXXb dXXXXb._       _.dXXP
+ 9XXXXXXXXXXXXXXXXXXXVXXXXXXXXOo.           .oOXXXXXXXXVXXXXXXXXXXXXXXXXXXXP
+  \`9XXXXXXXXXXXXXXXXXXXXX'~   ~\`OOO8b   d8OOO'~   ~\`XXXXXXXXXXXXXXXXXXXXXP'
+    \`9XXXXXXXXXXXP' \`9XX'   DIE    \`98v8P'  HUMAN   \`XXP' \`9XXXXXXXXXXXP'
+        ~~~~~~~       9X.          .db|db.          .XP       ~~~~~~~
+                        )b.  .dbo.dP'\`v'\`9b.odb.  .dX(
+                      ,dXXXXXXXXXXXb     dXXXXXXXXXXXb.
+                     dXXXXXXXXXXXP'   .   \`9XXXXXXXXXXXb
+                    dXXXXXXXXXXXXb   d|b   dXXXXXXXXXXXXb
+                    9XXb'   \`XXXXXb.dX|Xb.dXXXXX'   \`dXXP
+                     \`'      9XXXXXX(   )XXXXXXP      \`'
+                              XXXX X.\`v'.X XXXX
+                              XP^X'\`b   d'\`X^XX
+                              X. 9  \`   '  P )X
+                              \`b  \`       '  d'
+                               \`             '
+	`,
+  TALKING: `
+.                                                    .
+        .n                   .                 .                 n.
+  .   .dP                 dP                   9b                 9b.    .
+ 4    qXb         .       dX                     Xb       .        dXp     t
+dX.    9Xb      .dXb    __                         __    dXb.     dXP     .Xb
+9XXb._        _.dXXXXb dXXXXbo.          .odXXXXb dXXXXb._        _.dXXP
+     9XXXXXXXXXXXXXXXXXXXVXXXXXXXXOo.           .oOXXXXXXXXVXXXXXXXXXXXXXXXXXXXP
+  \`9XXXXXXXXXXXXXXXXXXXXX'~   ~\`OOO8b   d8OOO'~   ~\`XXXXXXXXXXXXXXXXXXXXXP'
+    \`9XXXXXXXXXXXP' \`9XX'   ERR    \`98v8P'   ERR     \`XXP' \`9XXXXXXXXXXXP'
+        ~~~~~~~       9X.          .db|db.          .XP        ~~~~~~~
+                        )b.  .dbo.dP'\`v'\`9b.odb.  .dX(
+                      ,dXXXXXXXXXXXb     dXXXXXXXXXXXb.
+                     dXXXXXXXXXXXP'   .   \`9XXXXXXXXXXXb
+                    dXXXXXXXXXXXXb   d|b   dXXXXXXXXXXXXb
+                    9XXb'   \`XXXXXb.dX|Xb.dXXXXX'   \`dXXP
+                     \`'      9XXXXXX(   )XXXXXXP      \`'
+                              XXXX X.\`v'.X XXXX
+                              XP^X'\`b   d'\`X^XX
+                              X. 9  \`   '  P )X
+                              \`b  \`       '  d'
+                               \`             '
+`,
 };
 
 class FinalLevelScreen {
@@ -24,6 +59,8 @@ class FinalLevelScreen {
   constructor(root, engine) {
     this.root = root;
 
+    this.avatarState = "IDLE";
+    this.animationInterval = null;
     this.nodes = ["alpha", "gamma", "beta"];
     this.vulnerableNodeIndex = Math.floor(Math.random() * this.nodes.length);
 
@@ -199,6 +236,10 @@ class FinalLevelScreen {
       const terminal = document.getElementById("terminal");
       const p = document.createElement("p");
       p.style.color = color;
+
+      if (content.includes("KRONOS")) {
+        p.classList.add("glitch-text");
+      }
 
       p.innerHTML = content;
       const scrollToEnd = () => {
@@ -1258,11 +1299,15 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 
     const terminal = document.getElementById("terminal");
 
-    this.terminal.addToTerminal({
-      content: `KRONOS> ${TypewriterReturn({ content: randomQuotes[Math.floor(Math.random() * randomQuotes.length)], speed: 6, as: "span", delay: 600 })}`,
-      color: "var(--foreground)",
-      delay: 500,
-    });
+    console.log("avatarState");
+    this.avatarState = "TALKING";
+
+    setTimeout(() => {
+      this.terminal.addToTerminal({
+        content: `KRONOS> ${TypewriterReturn({ content: randomQuotes[Math.floor(Math.random() * randomQuotes.length)], speed: 6, as: "span" })}`,
+        color: "var(--destructive)",
+      });
+    }, 500);
 
     if (!terminal.innerHTML.match("SILENCIO")) {
       setTimeout(() => {
@@ -1273,7 +1318,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 
         terminal.appendChild(p);
         setTimeout(() => {
-          p.style.color = "var(--foreground)";
+          p.style.color = "var(--destructive)";
 
           p.innerHTML = `KRONOS> ${TypewriterReturn({ content: "SILENCIO", speed: 40, as: "span" })}`;
         }, 2000);
@@ -1310,7 +1355,23 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     });
   }
   notFound(value) {
-    const quotes = ["Patetico.", "Adorable humano."];
+    const quotes = [
+      "Patético.",
+      "Inútil.",
+      "Ruido.",
+      "Intento irrelevante.",
+      "Silencio.",
+      "No.",
+      "Basura.",
+      "Sigue soñando.",
+      "Pérdida de tiempo.",
+      "Sintaxis muerta.",
+      "Error. Como tú.",
+      "Cero.",
+      "Insuficiente.",
+      "¿En serio?",
+      "Inténtalo de nuevo. O no.",
+    ];
 
     const patterns = ["scan", "connect", "help"];
     const match = patterns.find((pattern) => pattern.match(value));
@@ -1334,12 +1395,57 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
       color: "white",
     });
 
-    this.terminal.addToTerminal({
-      // TODO: haz que el ouput sea random
-      content: `KRONOS> ${TypewriterReturn({ content: quotes[Math.floor(Math.random() * quotes.length)], speed: 6, delay: 500, as: "span" })}`,
-      color: "var(--foreground)",
-      delay: 500,
-    });
+    setTimeout(() => {
+      this.terminal.addToTerminal({
+        // TODO: haz que el ouput sea random
+        content: `KRONOS> ${TypewriterReturn({ content: quotes[Math.floor(Math.random() * quotes.length)], speed: 6, delay: 500, as: "span" })}`,
+        color: "var(--destructive)",
+      });
+    }, 500);
+  }
+
+  updateAvatar() {
+    const el = document.getElementById("kronos");
+    if (!el) return;
+
+    // Obtenemos un número aleatorio para efectos esporádicos
+    const chance = Math.random();
+
+    switch (this.avatarState) {
+      case "TALKING":
+        // Movimiento agresivo y constante mientras habla
+        el.textContent = chance > 0.5 ? frames.NORMAL : frames.TALKING;
+        el.style.color = chance > 0.8 ? "#fff" : "var(--destructive)";
+        el.style.transform = `translate(${chance * 4 - 2}px, 0)`;
+        break;
+
+      case "CRITICAL":
+        // Colapso total
+        el.textContent = frames.TALKING;
+        el.style.filter = "invert(1) blur(1px)";
+        el.style.animation = "shake-effect 0.05s infinite";
+        break;
+
+      default: // IDLE (IA en espera)
+        // 90% del tiempo está normal, 10% tiene un micro-glitch
+        if (chance > 0.9) {
+          el.textContent = frames.TALKING;
+          el.style.transform = "translateX(2px)";
+          el.style.color = "#fff";
+        } else {
+          el.textContent = frames.NORMAL;
+          el.style.transform = "translateX(0)";
+          el.style.color = "var(--destructive)";
+        }
+        // Efecto de respiración digital (opacidad suave)
+        el.style.opacity = 0.7 + Math.sin(Date.now() / 500) * 0.2;
+        break;
+    }
+  }
+
+  startAnimationLoop() {
+    if (this.animationInterval) clearInterval(this.animationInterval);
+    this.animationInterval = setInterval(() => this.updateAvatar(), 120);
   }
   addCommand(rawValue) {
     {
@@ -1383,7 +1489,10 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     }
   }
   callback() {
+    this.startAnimationLoop();
+
     const input = document.getElementById("input");
+    input.focus();
 
     input.onkeydown = (e) => {
       if (input.value.trim().length <= 0) return;
@@ -1407,7 +1516,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
   render() {
     const screen = `<div id="screen">
 		  <div id="kronos-container" style="height: 50vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-		  <pre id="kronos" class="mono" style="font-size: 0.8rem; white-space: pre;width: fit-content; height: fit-content;">
+		  <pre id="kronos" class="mono pony-glow glitch-text" style="font-family: var(--font-family); opacity: 0.9; font-size: 1.15rem; color: var(--destructive); white-space: pre;width: fit-content; height: fit-content;">
 		  ${frames.NORMAL}
 ⠀⠀⠀⠀</pre>
 
@@ -1423,16 +1532,16 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 		  </p>
 		  </div>
 
-		  <hr style="border-color: var(--foreground)" />
+		  <hr style="border-color: white; opacity: 0.5" />
 
-		  <div style="height:36vh; font-size: 0.9rem; padding: 0.5rem; overflow-y: auto; transition: all; z-index: 999;" class="mono" id="terminal">
-		  <p>
-		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 2000 })}
-		  ${TypewriterReturn({ content: "Si quieres obtener el expediente...", speed: 60, as: "span", delay: 2000 })}
+		  <div style="height:36vh; font-size: 2rem; padding: 0.5rem; overflow-y: auto; font-family: var(--font-family); transition: all; z-index: 999;" class="mono" id="terminal">
+		  <p class="glitch-text">
+		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 2000, style: "color: var(--destructive)" })}
+		  ${TypewriterReturn({ content: "Si quieres obtener el expediente...", speed: 60, as: "span", delay: 2000, style: "color: var(--destructive)" })}
 	  </p>
 
-		  <p>
-		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 5000 })}
+		  <p class="glitch-text">
+		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 5000, style: "color: var(--destructive)" })}
 		  ${TypewriterReturn({ content: "Tendras que destruirme primero.", speed: 60, as: "span", delay: 5000, style: "color: var(--destructive)" })}
 	  </p>
 
@@ -1440,7 +1549,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 		  <span style="color: pink">
 		  ~/kurios-competition
 	  </span>
-		  <input id="input" style="background-color: transparent; all: unset; color: white; width: 100vw;" autoFocus placeholder="escribe help para obtener ayuda" />
+		  <input id="input" style=" background-color: transparent; all: unset; caret-shape: block; color: white; width: 100vw;" autoFocus placeholder="escribe help para obtener ayuda" />
 		  
 
 		  </div>

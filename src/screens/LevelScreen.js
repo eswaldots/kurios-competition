@@ -66,7 +66,13 @@ const createLevels = (engine) => {
 <span style="opacity: 0.4;">1</span> <span style="color: #ff3399;">function</span> <span style="color: #00ffff;">validarAcceso</span>(input) {
 <span style="opacity: 0.4;">2</span>     <span style="color: #ff3399;">let</span> clave_maestra = <span style="color: #a6e22e;">"KRONOS"</span>;
 <span style="opacity: 0.4;">3</span> 
-<span style="opacity: 0.4;">4</span>     <span style="color: #888888; font-style: italic;">// ERROR DETECTADO EN LA LINEA 5:</span><div class="bug-line-critical"><span style="opacity: 0.4; color: #fff;">5</span>     <span class="bug-text-glitch">if (input = clave_maestra) {</span> </div><span style="opacity: 0.4;">6</span>         <span style="color: #ff3399;">return</span> <span style="color: #a6e22e;">"Acceso Concedido"</span>;
+<span style="opacity: 0.4;">4</span>     <span style="color: #888888; font-style: italic;">// ERROR DETECTADO EN LA LINEA 5:</span><div class="bug-line-critical"><span class="k-tooltip">
+<span class="k-tooltip-title">TS2365: TYPE_ERROR</span>
+    Se detectó una asignación '=' en lugar de una comparación.<br>
+    Kronos forzó la condición a ser siempre VERDADERA.<br>
+    > Inserte el operador <span class="k-tooltip-highlight">===</span> en la terminal para parchear.
+</span><span style="opacity: 0.4; color: #fff;">5</span>     <span class="bug-text-glitch">if (input = clave_maestra) {</span> 
+</div><span style="opacity: 0.4;">6</span>         <span style="color: #ff3399;">return</span> <span style="color: #a6e22e;">"Acceso Concedido"</span>;
 <span style="opacity: 0.4;">7</span>     }
 <span style="opacity: 0.4;">8</span> }
         </pre>
@@ -149,12 +155,12 @@ const createLevels = (engine) => {
       },
       render: `
 	  <div class="terminal-parent">
-	  <div class="encrypted-terminal" style="text-wrap: wrap; text-overflow: clip; font-size: 0.6rem; font-family: "JetBrains Mono", monospace">
+	  <div class="encrypted-terminal" style="text-wrap: wrap; text-overflow: clip; font-size: 0.9rem; font-family: "JetBrains Mono", monospace">
 	  <div style="overflow: hidden; max-height: 300px;">
 	  <p class="text-hover"></p>
-	  <div class="text-hover-container">
+	  <div class="text-hover-container k27-intercept-container">
 	  <p class="hidden-text-hover"></p>
-	  <p class="hidden-text-ascii">
+	  <p class="hidden-text-ascii  k27-entity-kronos">
  ██ ▄█▀ ██▀███   ▒█████   ███▄    █  ▒█████    ██████ 
  ██▄█▒ ▓██ ▒ ██▒▒██▒  ██▒ ██ ▀█   █ ▒██▒  ██▒▒██    ▒ 
 ▓███▄░ ▓██ ░▄█ ▒▒██░  ██▒▓██  ▀█ ██▒▒██░  ██▒░ ▓██▄   
@@ -224,11 +230,11 @@ const createLevels = (engine) => {
           requestAnimationFrame(draw);
           analyzer.getByteTimeDomainData(dataArray);
 
-          ctx.fillStyle = "rgba(200 200 200 0)";
+          ctx.fillStyle = "black";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           ctx.lineWidth = 2;
-          ctx.strokeStyle = "oklch(0.51 0.23 277)";
+          ctx.strokeStyle = "white";
           ctx.beginPath();
           // Draw each point in the waveform
           const sliceWidth = canvas.width / dataArray.length;
@@ -340,12 +346,12 @@ const createLevels = (engine) => {
 	  <div class="my-4 flex items-center gap-6">
 	  <div class="gap-1 flex items-center flex-col">
 	  <div class="knob" id="frequency"></div>
-	  <span>Frecuencia</span>
+	  <span>${TypewriterReturn({ content: "FRECUENCIA", speed: 60 })}</span>
 	  </div>
 
 	  <div class="gap-1 flex items-center flex-col">
 	  <div class="knob" id="gain"></div>
-	  <span>Ganancia</span>
+	  <span>${TypewriterReturn({ content: "GANANCIA", speed: 60 })}</span>
 	  </div>
 	  </div>
 	  `,
@@ -429,12 +435,10 @@ class LevelScreen {
       if (
         String(input.value).toLowerCase() === this.level.answer.toLowerCase()
       ) {
-        // 1. Bloqueo inmediato del input
         input.disabled = true;
         const container =
           this.root.querySelector(".center-container") || this.root;
 
-        // Curación silenciosa (Si estaba a 1 vida, le quitamos la asfixia roja)
         const lives = Number(sessionStorage.getItem(LIVES_STORAGE_KEY));
         if (lives <= 1) {
           this.root.classList.remove("danger-scanlines");
@@ -442,7 +446,6 @@ class LevelScreen {
           updateLives(2);
         }
 
-        // 2. El Verde Éxito (Lo que te gustó)
         input.style.color = "#00ff33";
         input.style.textShadow = "0 0 10px rgba(0, 255, 51, 0.8)";
         input.style.borderColor = "#00ff33";
@@ -450,34 +453,20 @@ class LevelScreen {
 
         if (this.engine.audio.hitStop) this.engine.audio.hitStop.play();
 
-        // Si implementaste la función scrambleText, la usamos.
-        // Si no, simplemente cambiamos el valor:
-        if (typeof this.scrambleText === "function") {
-          this.scrambleText(input, "[ BYPASS_SUCCESS ]", 400, true);
-        } else {
-          input.value = "[ BYPASS_SUCCESS ]";
-        }
+        this.scrambleText(input, "[ BYPASS_SUCCESS ]", 400, true);
 
-        // 3. El Micro-Glitch de salida (Estilo Pony Island)
         setTimeout(() => {
-          if (this.engine.audio.glitch) this.engine.audio.glitch.play(); // Un sonido de estática corto
-
-          // Aplicamos la clase de salida brusca que creamos antes
           container.classList.add("pony-glitch-out");
 
-          // 4. Salto inmediato al LevelEndedScreen
           setTimeout(() => {
             this.engine.handleStateUpdate(GameState.LEVEL_ENDED, this.level);
             if (this.level.onSuccess) this.level.onSuccess();
-          }, 150); // Solo 150ms de oscuridad. Un chasquido.
-        }, 800); // Le damos 800ms al jugador para leer el texto verde antes de cambiar
+          }, 150);
+        }, 800);
 
         return;
       }
 
-      // ==========================================
-      // SECUENCIA DE ERROR (DAÑO)
-      // ==========================================
       this.engine.audio.reject.play();
 
       const container =
@@ -576,7 +565,9 @@ class LevelScreen {
 	  <div class="container">
 	  <div class="center">
 	    <h1 class="text-xl pony-glow glitch-text font-semibold typewriter1" style="text-transform: uppercase; font-weight: 900" >${TypewriterReturn({ content: level.title, speed: 24 })}</h1>
+		  <div class="my-3">
 	    <span style="font-size: 1.1rem" class="my-3 pony-glow typewriter2">${TypewriterReturn({ content: level.description, speed: 24, delay: level.title.length * 80 })}</span>
+		  </div>
 	  </div>
 	  ${level.render}
       <div class='lives-container'>
