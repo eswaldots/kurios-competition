@@ -33,7 +33,7 @@ class FinalLevelSequenceScreen {
       setTimeout(() => {
         // Estética purista: Todo al top-left, sin adornos
         const screen = `
-          <div class="final-screen" style="font-family: monospace; padding: 4rem; color: #fff;">
+          <div class="final-screen" style="font-family: var(--font-family); padding: 4rem; color: #fff; font-size: 1.5rem;">
             <p class="typewriter1" style="color: #ff3333;">[ CRITICAL ] UNKNOWN_PROCESS_BREACH: KRONOS</p>
             <p class="typewriter2">[ STATUS ] PID_0001: ESCALATING_PRIVILEGES...</p>
             <p class="typewriter3">[ LOGIC ] KERNEL_REWRITTEN: 2 + 2 = 5 // OK</p>
@@ -45,7 +45,7 @@ class FinalLevelSequenceScreen {
 
             <div style="margin-top: 4rem;">
                 <p class="typewriter8 init-dangerous">>> ROOT_ACCESS: GRANTED</p>
-                <p class="typewriter9" style="background: #ff3333; color: #000; display: inline-block; padding: 0 10px;">TERMINAL_CONTROL: TRANSFERRED_TO_KRONOS</p>
+                <p class="typewriter9" style="color: #000; display: inline-block; padding: 0 10px;">TERMINAL_CONTROL: TRANSFERRED_TO_KRONOS</p>
             </div>
           </div>
         `;
@@ -110,7 +110,7 @@ class FinalLevelSequenceScreen {
   render() {
     // FASE 1: Logs estándar de Kurios [cite: 11, 44]
     const screen = `
-      <div class="final-screen" style="font-family: monospace; padding: 4rem; color: #eee; line-height: 1.6;">
+      <div class="final-screen" style="font-family: var(--font-family); padding: 4rem; color: #eee; line-height: 1.6 ; font-size: 1.5rem;">
         <p class="typewriter1"><span style="color: #00ff00;">[ OK ]</span> Decrypting sector_k27: 100% completed [cite: 53]</p>
         <p class="typewriter2" style="color: #ffff00;">[ WARN ] Integrity failure at level_005: recursive process detected [cite: 63]</p>
         <p class="typewriter3"><span style="color: #00ffff;">[ INFO ]</span> Extracting metadata from 'KRONOS' payload...</p>

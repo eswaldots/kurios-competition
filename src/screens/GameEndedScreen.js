@@ -76,7 +76,6 @@ class GameEndedScreen {
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-      /* Efecto CRT Scanlines puro (Pony Island Vibe) */
       .crt-lines {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
@@ -86,7 +85,6 @@ class GameEndedScreen {
         pointer-events: none;
       }
 
-      /* Layout minimalista de terminal cruda */
       .indie-terminal {
         width: 100%;
         max-width: 640px; /* Ancho de lectura óptimo */
@@ -99,7 +97,7 @@ class GameEndedScreen {
       }
 
       .sys-header {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-family);
         font-size: 0.75rem;
         color: #555;
         border-bottom: 1px dashed #333;
@@ -111,8 +109,8 @@ class GameEndedScreen {
       }
 
       .indie-body {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.9rem;
+        font-family: var(--font-family);
+        font-size: 1.25rem;
         color: #a0a0a0;
         line-height: 1.8;
         letter-spacing: -0.025em;
@@ -131,7 +129,7 @@ class GameEndedScreen {
         border: 1px solid #333;
         background: transparent;
         color: var(--destructive);
-        font-family: 'Silkscreen', monospace;
+        font-family: var(--font-family);
         font-size: 0.9rem;
         text-align: center;
         padding: 1.2rem;
@@ -173,7 +171,7 @@ class GameEndedScreen {
           delay: 2000,
           as: "h1",
           style:
-            "font-family: 'Silkscreen', monospace; font-size: 2.2rem; font-weight: 700; margin-bottom: 3rem; letter-spacing: -2px; color: #fff;",
+            "font-family: var(--font-family); font-size: 2.2rem; font-weight: 700; margin-bottom: 3rem; letter-spacing: -2px; color: #fff;",
         })}
 	  </div>
 

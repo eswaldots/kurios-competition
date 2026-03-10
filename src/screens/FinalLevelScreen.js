@@ -169,7 +169,7 @@ class FinalLevelScreen {
     const warning = document.getElementById("status-warning");
 
     if (safePercent < 50) {
-      container.style.color = "var(--foreground)";
+      container.style.color = "var(--destructive)";
       warning.style.opacity = 0;
     } else if (safePercent >= 50 && safePercent < 85) {
       container.style.color = "var(--warning, #ffff00)";
@@ -195,7 +195,6 @@ class FinalLevelScreen {
       const terminal = document.getElementById("terminal");
       const prompt = document.getElementById("prompt");
 
-      terminal.style.transition = "all 0.05s";
       prompt.style.animation = "";
       prompt.style.opacity = "0";
       terminal.style.zIndex = "999";
@@ -205,24 +204,98 @@ class FinalLevelScreen {
       terminal.style.backgroundColor = "var(--background)";
       terminal.style.top = "0";
       terminal.style.left = "0";
+      terminal.style.bottom = "auto";
+
+      // FORZAMOS EL SCROLL AL ENTRAR
+      terminal.style.overflowY = "auto";
+      terminal.style.overflowX = "hidden";
+
+      const enterAnim = terminal.animate(
+        [
+          {
+            clipPath: "inset(50% 0 50% 0)",
+            filter:
+              "contrast(300%) brightness(500%) blur(4px) hue-rotate(90deg)",
+          },
+          {
+            clipPath: "inset(10% 0 10% 0)",
+            filter:
+              "contrast(200%) brightness(200%) blur(1px) hue-rotate(45deg)",
+            offset: 0.4,
+          },
+          {
+            clipPath: "inset(0 0 0 0)",
+            filter: "contrast(100%) brightness(100%) blur(0) hue-rotate(0deg)",
+          },
+        ],
+        {
+          duration: 400,
+          easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+          fill: "forwards",
+        },
+      );
+
+      // LIBERAMOS LA GPU CUANDO TERMINA PARA QUE EL SCROLL FUNCIONE
+      enterAnim.onfinish = () => {
+        enterAnim.cancel(); // Mata el objeto de animación residual
+        terminal.style.clipPath = "none";
+        terminal.style.filter = "none";
+      };
     },
+
     exitTUI() {
       const terminal = document.getElementById("terminal");
       const prompt = document.getElementById("prompt");
-
       const container = document.getElementById("container");
-      container.innerHTML = "";
-      prompt.style.opacity = "1";
-      terminal.style.backgroundColor = "transparent";
-      terminal.style.zIndex = "999";
-      terminal.style.height = "36vh";
-      terminal.style.position = "relative";
-      terminal.style.top = "";
-      terminal.style.left = "";
+      const input =
+        document.getElementById("coords") || document.querySelector("input");
 
-      terminal.style.bottom = "0";
+      // Ocultamos el scroll temporalmente durante el colapso para que no se vea feo
+      terminal.style.overflowY = "hidden";
 
-      input.focus();
+      const exitAnim = terminal.animate(
+        [
+          {
+            clipPath: "inset(0 0 0 0)",
+            filter: "contrast(100%) brightness(100%) blur(0)",
+          },
+          {
+            clipPath: "inset(49.5% 0 49.5% 0)",
+            filter: "contrast(400%) brightness(600%) blur(2px)",
+            offset: 0.6,
+          },
+          {
+            clipPath: "inset(50% 50% 50% 50%)",
+            filter: "contrast(500%) brightness(1000%) blur(4px)",
+            opacity: 0,
+          },
+        ],
+        {
+          duration: 350,
+          easing: "cubic-bezier(0.5, 0, 0.75, 0)",
+        },
+      );
+
+      exitAnim.onfinish = () => {
+        container.innerHTML = "";
+        prompt.style.opacity = "1";
+        terminal.style.backgroundColor = "transparent";
+        terminal.style.zIndex = "999";
+        terminal.style.height = "36vh";
+        terminal.style.width = "100%";
+        terminal.style.position = "relative";
+        terminal.style.top = "";
+        terminal.style.left = "";
+        terminal.style.bottom = "0";
+        terminal.style.opacity = "1";
+
+        // RESTAURAMOS EL ESTADO ORIGINAL DEL CONTENEDOR
+        terminal.style.overflowY = "auto";
+        terminal.style.clipPath = "none";
+        terminal.style.filter = "none";
+
+        if (input) input.focus();
+      };
     },
     scrollToEnd() {
       const terminal = document.getElementById("terminal");
@@ -238,7 +311,7 @@ class FinalLevelScreen {
       p.style.color = color;
 
       if (content.includes("KRONOS")) {
-        p.classList.add("glitch-text");
+        p.classList.add("kronos-hell-text");
       }
 
       p.innerHTML = content;
@@ -286,7 +359,7 @@ class FinalLevelScreen {
 
       this.terminal.addToTerminal({
         content: `KRONOS> ${TypewriterReturn({ content: "Eso no funcionara de nuevo.", speed: 24, as: "span", delay: 500 })}`,
-        color: "var(--foreground)",
+        color: "var(--destructive)",
         delay: 1200,
       });
 
@@ -319,7 +392,7 @@ class FinalLevelScreen {
         setTimeout(() => {
           this.terminal.addToTerminal({
             content: `KRONOS> ${TypewriterReturn({ content: "¿Golpeando puertas cerradas? Aprende a leer tus propios escaneos.", speed: 24, as: "span" })}`,
-            color: "var(--foreground)",
+            color: "var(--destructive)",
           });
         }, 1000);
       }, 1500);
@@ -336,7 +409,7 @@ class FinalLevelScreen {
     setTimeout(() => {
       this.terminal.addToTerminal({
         content: `KRONOS> ${TypewriterReturn({ content: "¿Crees que puedes entrar por la fuerza bruta? Mi estructura es perfecta.", speed: 6, as: "span" })}`,
-        color: "var(--foreground)",
+        color: "var(--destructive)",
       });
     }, 800);
 
@@ -370,35 +443,53 @@ class FinalLevelScreen {
               status = true;
               coords.disabled = true;
 
-              container.classList.add("dead-session");
+              // --- VICTORIA BASADA EN TU LEVELENDEDSCREEN ---
+              container.innerHTML = `
+            <div class="center-container text-lg pony-glitch-flash" style="color: #00ff33; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <div style="font-size: 0.9rem; display: grid; gap: 8px; font-family: monospace; text-align: left; width: fit-content;">
+                <p id="t-line1" style="opacity: 0;">[ OK ] UPLINK OVERRIDDEN</p>
+                <p id="t-line2" style="opacity: 0;">[ PROCESS ] ASSERTING 2 + 2 = 5...</p>
+                <p id="t-line3" style="opacity: 0;">[<span id="t-bar">----------</span>] <span id="t-num">0</span>%</p>
+              </div>
+            </div>
+          `;
 
-              // Inyectar el Exit Code
-              const exitMsg = document.createElement("p");
-              exitMsg.className = "exit-code-success";
-              exitMsg.innerText = "[PROCESS TERMINATED WITH EXIT CODE 0]";
-              container.appendChild(exitMsg);
+              const line1 = document.getElementById("t-line1");
+              const line2 = document.getElementById("t-line2");
+              const line3 = document.getElementById("t-line3");
+              const pBar = document.getElementById("t-bar");
+              const pNum = document.getElementById("t-num");
 
-              // El Barrido Físico de RAM
-              const textElements =
-                container.querySelectorAll("p, h2, pre, span");
-              let wipeDelay = 0;
-
-              textElements.forEach((el) => {
-                setTimeout(() => {
-                  // Solo reemplazamos si tiene texto y no es el exitMsg que acabamos de crear
-                  if (el.innerText && el.className !== "exit-code-success") {
-                    el.innerText = el.innerText.replace(/[^\s]/g, "█");
-                    el.style.color = "#222"; // Bloques oscuros
-                  }
-                }, wipeDelay);
-                wipeDelay += 40; // Velocidad del barrido hacia abajo
-              });
-
-              // Llamar a onSuccess justo cuando termina el barrido visual
               setTimeout(() => {
-                onSuccess();
-              }, wipeDelay + 400);
-              // --- FIN DE VICTORIA BRUTALISTA -
+                if (line1) line1.style.opacity = "1";
+              }, 150);
+              setTimeout(() => {
+                if (line2) line2.style.opacity = "1";
+              }, 500);
+              setTimeout(() => {
+                if (line3) line3.style.opacity = "1";
+              }, 800);
+
+              let progress = 0;
+              setTimeout(() => {
+                const interval = setInterval(() => {
+                  progress += 25;
+                  if (pNum) pNum.innerText = progress;
+                  if (pBar)
+                    pBar.innerText =
+                      "█".repeat(progress / 10) +
+                      "-".repeat(10 - progress / 10);
+
+                  if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                      container.classList.add("pony-glitch-out");
+                      setTimeout(() => onSuccess(), 100);
+                    }, 300);
+                  }
+                }, 70);
+              }, 800);
+              // --- FIN DE VICTORIA ---
             } else {
               container.classList.add("collapse-effect");
 
@@ -418,7 +509,7 @@ class FinalLevelScreen {
         for (let i = 15; i >= 0; i--) {
           setTimeout(
             () => {
-              timer.innerHTML = String(i);
+              if (timer) timer.innerHTML = String(i);
 
               if (i === 0 && !status) {
                 container.innerHTML = "";
@@ -438,16 +529,16 @@ class FinalLevelScreen {
       }, 3000);
 
       return `
-		<div class="center-container" style="font-family: 'Silkscreen'" id="container">
-			<div style="text-align: center; display: grid;">
-<h2 style="font-weight: 700; opacity: 1; max-width: 56rem;">\t\t${TypewriterReturn({ content: "[SISTEMA: ENLACE SINCRONIZADO. ENCUENTRA LA DISCORDANCIA]", speed: 24 })}</h2>
+    <div class="center-container" style="font-family: var(--font-family)" id="container">
+      <div style="text-align: center; display: grid;">
+<h2 style="font-weight: 700; opacity: 1; max-width: 56rem; color: var(--destructive)" class="pony-glow glitch-text">\t\t${TypewriterReturn({ content: "[SISTEMA: ENLACE SINCRONIZADO. ENCUENTRA LA DISCORDANCIA]", speed: 24 })}</h2>
 
-			<p class="text-lg">[TIEMPO RESTANTE]: 00:<span id="timer">15</span></p>
-			</div>
+      <p class="text-xl pony-glow glitch-text">[TIEMPO RESTANTE]: 00:<span id="timer">15</span></p>
+      </div>
 
-			<pre style="font-size: 2rem; font-family: 'Silkscreen'">
-			
-        1      2      3      4
+      <pre style="font-size: 2rem; font-family: 'Silkscreen'">
+      
+    	1      2      3      4
 ${Array.from({ length: 3 })
   .map((_, i) => {
     return `${yArray[i]}   ${Array.from({ length: 4 })
@@ -455,12 +546,12 @@ ${Array.from({ length: 3 })
       .join("")}\n`;
   })
   .join("")}
-			</pre>
-			<div style="font-size: 1.25rem">
-			<p>[YOU]: <input style="all: unset; color: white; text-transform: capitalize" placeholder="INGRESA COORDENADA"  autoFocus id="coords" /></p>
-			</div>
-			</div>
-			`;
+      </pre>
+      <div style="font-size: 1.5rem">
+      <p>[YOU]: <input style="all: unset; caret-shape: block; color: white; text-transform: capitalize" placeholder="INGRESA COORDENADA"  autoFocus id="coords" /></p>
+      </div>
+      </div>
+      `;
     };
 
     this.terminal.addToTerminal({
@@ -478,7 +569,7 @@ ${Array.from({ length: 3 })
           setTimeout(() => {
             this.terminal.addToTerminal({
               content: `KRONOS> ${TypewriterReturn({ content: "Esto es inaceptable. Eres persistente. Demasiado para este hardware local.", speed: 30, as: "span" })}`,
-              color: "var(--foreground)",
+              color: "var(--destructive)",
             });
           }, 1500);
 
@@ -492,7 +583,7 @@ ${Array.from({ length: 3 })
           setTimeout(() => {
             this.terminal.addToTerminal({
               content: `KRONOS> ${TypewriterReturn({ content: `Veo que usas ${getBrowserType()} en ${getOSType()}, nada mal para un principiante.`, speed: 30, as: "span" })}`,
-              color: "var(--foreground)",
+              color: "var(--destructive)",
             });
           }, 6000);
 
@@ -533,7 +624,7 @@ ${Array.from({ length: 3 })
           setTimeout(() => {
             this.terminal.addToTerminal({
               content: `KRONOS> ${TypewriterReturn({ content: kronosTaunts[Math.floor(Math.random() * kronosTaunts.length)], speed: 24, as: "span" })}`,
-              color: "var(--foreground)",
+              color: "var(--destructive)",
             });
           }, 500);
 
@@ -570,7 +661,7 @@ ${Array.from({ length: 3 })
       screen.style.backgroundColor = "#050505"; // Un negro ligeramente diferente para marcar el reinicio
 
       screen.innerHTML = `
-      <div style="padding: 2rem; font-family: 'JetBrains Mono', monospace; height: 100vh; color: white; font-size: 0.85rem; line-height: 1.4; font-weight: 500">
+      <div style="padding: 2rem; font-family: var(--font-family); height: 100vh; color: white; font-size: 1rem; line-height: 1.4; font-weight: 500">
         ${TypewriterReturn({ content: "^C", speed: 0, delay: 0, as: "p" })}
         
         ${TypewriterReturn({
@@ -662,7 +753,7 @@ ${Array.from({ length: 3 })
           delay: 22000,
           as: "p",
           style:
-            "color: var(--success); font-weight: bold; border: 1px solid var(--success); padding: 5px; width: fit-content;",
+            "color: var(--success); font-weight: bold; padding: 5px; width: fit-content;",
         })}
       </div>
     `;
@@ -705,8 +796,10 @@ ${Array.from({ length: 3 })
 
         const p = document.createElement("pre");
 
+        p.style.fontFamily = "var(--font-family)";
+        p.style.color = "var(--destructive)";
         p.innerHTML = TypewriterReturn({ content: `> ${content}`, speed });
-        p.style.fontSize = "1.25rem";
+        p.style.fontSize = "1.5rem";
         p.style.fontWeight = "600";
         p.style.lineHeight = "-2rem";
 
@@ -766,13 +859,13 @@ ${Array.from({ length: 3 })
 
       this.terminal.addToTerminal({
         content: `KRONOS> ${TypewriterReturn({ content: "ni siquiera lo intentes.", speed: 40, as: "span" })}`,
-        color: "var(--foreground)",
+        color: "var(--destructive)",
       });
 
       setTimeout(() => {
         this.terminal.addToTerminal({
           content: `KRONOS> ${TypewriterReturn({ content: "¿creíste que no estaba vigilando tus keystrokes?", speed: 30, as: "span" })}`,
-          color: "var(--foreground)",
+          color: "var(--destructive)",
         });
       }, 2500);
 
@@ -1000,7 +1093,7 @@ ${Array.from({ length: 3 })
       const shuffled = commonSnippets.sort(() => 0.5 - Math.random());
 
       let selected = shuffled.slice(0, 3);
-      let timeLeft = 30;
+      let timeLeft = 60;
       let overloadTimer;
 
       setTimeout(() => {
@@ -1084,17 +1177,17 @@ ${Array.from({ length: 3 })
 		    </div>
 
 		  <div>
-        <span id="typer-timer-container">COLAPSO EN: <span id="typer-timer">30</span>s</span>
+        <span id="typer-timer-container">COLAPSO EN: <span id="typer-timer">${timeLeft}</span>s</span>
 		  </div>
 		  </div>
 
-		    <div style="border: 2px solid var(--foreground); width: 36rem;">
+		    <div style="border: 2px solid var(--destructive); width: 36rem;">
 		${selected
       .map((selection, i) => {
         return `
 	      <div style="gap: 12px; display: flex; flex-direction: row; align-items: center;" id="${selection}-${i}" ${i === 0 && 'class="selected"'}>
-<div id="${`symbol-${i}`}" style="font-size: 1rem;width: 2.5rem; height: 2.5rem; background-color: black; color: white; display: flex; align-items: center; justify-content: center">${i}</div>
-		      <p style="font-size: 0.9rem; color: white"> ${selection.html}</p>
+<div id="${`symbol-${i}`}" style="font-size: 1.5rem; font-family: var(--font-family) ;width: 2.5rem; height: 2.5rem; background-color: black; color: white; display: flex; align-items: center; justify-content: center">${i}</div>
+		      <p style="font-size: 1.5rem; color: white"> ${selection.html}</p>
 		      </div>
 		      `;
       })
@@ -1109,8 +1202,8 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 		  >
 		  </div>
 
-<div class="placeholder" data-placeholder="${selected[currentSnippet].raw}" style="color: white; width: 100%;">
-		  <input id="typer-input" style="all: unset; color: white; width: 100%"/>
+<div class="placeholder" data-placeholder="${selected[currentSnippet].raw}" style="color: white; width: 100%; font-size: 1.5rem;">
+		  <input id="typer-input" style=" all: unset; color: white; width: 100%; font-size: 1.5rem; caret-shape: block;"/>
 		  </div>
 		  </div>
 
@@ -1130,7 +1223,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 
       this.terminal.addToTerminal({
         content: `KRONOS> ${TypewriterReturn({ content: randomInitTaunt, speed: 20, as: "span" })}`,
-        color: "var(--foreground)",
+        color: "var(--destructive)",
       });
     }, 2000);
 
@@ -1158,7 +1251,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
                 speed: 24,
                 as: "span",
               })}`,
-              color: "var(--foreground)",
+              color: "var(--destructive)",
             });
           }, 500);
 
@@ -1186,7 +1279,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
                 speed: 30,
                 as: "span",
               })}`,
-              color: "var(--foreground)",
+              color: "var(--destructive)",
             });
           }, 500);
 
@@ -1238,7 +1331,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     setTimeout(() => {
       this.terminal.addToTerminal({
         content: `KRONOS> ${TypewriterReturn({ content: "¿Un inyector genérico? Mis firewalls devoran eso en el desayuno.", speed: 30, as: "span" })}`,
-        color: "var(--foreground)",
+        color: "var(--destructive)",
       });
     }, 800);
 
@@ -1520,7 +1613,7 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 		  ${frames.NORMAL}
 ⠀⠀⠀⠀</pre>
 
-<div id="kronos-status-container" class="status-container" style="opacity: 0">
+<div id="kronos-status-container" class="status-container" style="opacity: 0; font-family: var(--font-family)">
   <p id="status-label">${TypewriterReturn({ content: "KRONOS_UPLOAD_LINK_ESTABLISHED", speed: 24, as: "p" })}</p>
   <p id="status-bar" class="mono">
     [<span id="bar-filled">░░░░░░░░░░░░░░░░░░░░</span><span id="bar-empty"></span>] <span id="bar-percent">0</span>%
@@ -1535,12 +1628,12 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 		  <hr style="border-color: white; opacity: 0.5" />
 
 		  <div style="height:36vh; font-size: 2rem; padding: 0.5rem; overflow-y: auto; font-family: var(--font-family); transition: all; z-index: 999;" class="mono" id="terminal">
-		  <p class="glitch-text">
+		  <p class="kronos-hell-text">
 		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 2000, style: "color: var(--destructive)" })}
 		  ${TypewriterReturn({ content: "Si quieres obtener el expediente...", speed: 60, as: "span", delay: 2000, style: "color: var(--destructive)" })}
 	  </p>
 
-		  <p class="glitch-text">
+		  <p class="kronos-hell-text">
 		  ${TypewriterReturn({ content: "KRONOS>", speed: 0.1, as: "span", delay: 5000, style: "color: var(--destructive)" })}
 		  ${TypewriterReturn({ content: "Tendras que destruirme primero.", speed: 60, as: "span", delay: 5000, style: "color: var(--destructive)" })}
 	  </p>

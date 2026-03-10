@@ -1387,6 +1387,36 @@ body {
 	text-transform: uppercase;
 }
 
+.kronos-hell-text {
+	color: #ffffff;
+	text-shadow:
+		1px 0px 0px rgba(255, 0, 0, 0.7),
+		-1px 0px 0px rgba(0, 255, 255, 0.0),
+		0 0 8px rgba(255, 255, 255, 0.5);
+	transition: text-shadow 0.1s ease-in-out;
+}
+
+@keyframes hellTextPulse {
+
+	0%,
+	100% {
+		text-shadow:
+			0 0 2px rgba(255, 51, 51, 0.3),
+			1px 0 1px rgba(0, 255, 255, 0.2),
+			-1px 0 1px rgba(255, 0, 255, 0.2),
+			0 0 5px rgba(128, 0, 0, 0.15);
+	}
+
+	50% {
+		/* Aumentamos muy ligeramente el brillo profundo en el medio */
+		text-shadow:
+			0 0 3px rgba(255, 51, 51, 0.4),
+			1.2px 0 1px rgba(0, 255, 255, 0.25),
+			-1.2px 0 1px rgba(255, 0, 255, 0.25),
+			0 0 7px rgba(128, 0, 0, 0.2);
+	}
+}
+
 #level-prompt {
 	transform: translateX(8px);
 }
@@ -1776,12 +1806,12 @@ body {
 	0%,
 	50%,
 	100% {
-		background-color: color-mix(in oklch, var(--foreground), transparent 20%);
+		background-color: color-mix(in oklch, var(--destructive), transparent 20%);
 	}
 
 	25%,
 	75% {
-		background-color: color-mix(in oklch, var(--foreground), transparent 90%);
+		background-color: color-mix(in oklch, var(--destructive), transparent 90%);
 	}
 }
 
