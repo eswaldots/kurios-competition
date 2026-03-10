@@ -85,7 +85,6 @@ El sistema requiere intervención manual.
           button.onclick = () => {
             button.disabled = true;
             button.style.pointerEvents = "none";
-            button.innerHTML = "[ OVERRIDE_FATAL ] █";
             button.style.color = "black";
             button.style.backgroundColor = "var(--destructive)";
             button.style.borderColor = "var(--destructive)";
@@ -155,7 +154,6 @@ El sistema requiere intervención manual.
       "[  OK  ] Reached target Initrd File Systems.",
       "[  OK  ] Reached target Initrd Default Target.",
       "Welcome to openSUSE 13.2 (Harlequin) (x86_64)!",
-
       "[  OK  ] Stopped Switch Root.",
       "[  OK  ] Stopped target Switch Root.",
       "[  OK  ] Stopped target Initrd File Systems.",
@@ -251,7 +249,7 @@ ${lines
         content: line,
         speed: isLast ? 40 : 0.0001,
         delay: i * 50,
-        style: `color: ${isLast ? "var(--destructive)" : "white"};`,
+        style: `color: ${isLast ? "var(--destructive)" : "white"}; opacity: 0`,
       })}</div>`;
     }
 
@@ -270,7 +268,7 @@ ${lines
               content: tag,
               speed: isLast ? 12 : 0.0001,
               delay: i * 50,
-              style: `color: ${tagColor}; white-space: pre;`,
+              style: `color: ${tagColor}; white-space: pre; opacity: 0`,
               as: "span",
             })}
 
@@ -278,7 +276,7 @@ ${lines
               content: msg,
               speed: isLast ? 40 : 0.0001,
               delay: i * 50 + (isLast ? tag.length * 12 : 0),
-              style: `color: ${isLast ? "var(--destructive)" : "white"}; white-space: pre;`,
+              style: `color: ${isLast ? "var(--destructive)" : "white"}; white-space: pre; opacity: 0;`,
               as: "span",
             })}
           </div>`;

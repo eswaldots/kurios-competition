@@ -111,7 +111,7 @@ class GameOverScreen {
       ${gameOverStyles}
       <div class="h-screen flex items-center pr-12 crt-bg" style="gap: 18rem; color: #ff3333;">
         
-        <pre class="font-semibold glitch-text dangerous-glow typewriter" style="font-size: 0.8rem; margin-top: -6rem; height: 100vh; opacity: 0; color: #cc0000;">
+        <pre class="font-semibold dangerous-glow typewriter" style="font-size: 2vh; margin-top: -6rem; height: 100vh; opacity: 0; color: #cc0000;">
                        uuuuuuuuuuuuuuuuuuuuu.
                    .u$$$$$$$$$$$$$$$$$$$$$$$$$$W.
                  u$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$Wu.
@@ -163,7 +163,7 @@ $$        $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
         <div style="z-index: 10; position: relative;">
           
-          <pre class="typewriter2 glitch-text dangerous-glow" style="color: white;">
+          <pre class="typewriter2 dangerous-glow" style="color: white;">
  ██░ ██  ▄▄▄       ▄████▄   ██ ▄█▀▓█████ ▓█████▄    ▄▄▄▄ ▓██   ██▓
 ▓██░ ██▒▒████▄    ▒██▀ ▀█   ██▄█▒ ▓█   ▀ ▒██▀ ██▌   ▓█████▄▒██  ██▒
 ▒██▀▀██░▒██  ▀█▄  ▒▓█    ▄ ▓███▄░ ▒███   ░██   █▌   ▒██▒ ▄██▒██ ██░
@@ -176,7 +176,7 @@ $$        $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                   ░                       ░                 ░░ ░    
           </pre>
 
-          <pre class="typewriter3 glitch-text dangerous-glow" style="color: #ff4d4d;">
+          <pre class="typewriter3 dangerous-glow" style="color: #ff4d4d;">
  ▄▀▀▄ █  ▄▀▀▄▀▀▀▄  ▄▀▀▀▀▄   ▄▀▀▄ ▀▄  ▄▀▀▀▀▄   ▄▀▀▀▀▄ 
 █  █ ▄▀ █   █   █ █      █ █  █ █ █ █      █ █ █   ▐ 
 ▐  █▀▄  ▐  █▀▀█▀  █      █ ▐  █  ▀█ █      █   ▀▄    
@@ -186,7 +186,7 @@ $$        $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ▐                         ▐                        
           </pre>
 
-          <p style="margin-bottom: 3rem; margin-top: 2.5rem; max-width: 28rem; font-size: 1rem; color: #aaaaaa;  padding-left: 15px;" class="typewriter4">
+          <p style="margin-bottom: 3rem; margin-top: 2.5rem; max-width: 28rem; font-size: 1.25rem; color: #aaaaaa;  padding-left: 15px;" class="typewriter4">
           "${quote}"
           </p>
           

@@ -10,16 +10,35 @@ class InstructionsScreen {
     this.engine = engine;
   }
   callback() {
+    const elements = document.querySelectorAll(".node-init");
+    elements.forEach((el, i) => {
+      el.style.animationDelay = `${i * -0.1}s`;
+
+      el.classList.remove("node-init");
+      el.classList.add("node-exit");
+    });
+
+    const text = document.querySelector("#text");
+    text.style.animationDelay = `${elements.length * -0.1}s`;
+
+    text.classList.add("node-exit");
+
     setTimeout(() => {
+      this.engine.root.classList.add("scanlines-animation");
+
       this.engine.handleStateUpdate(GameState.LEVEL1);
-    }, 100);
+
+      setTimeout(() => {
+        this.engine.root.classList.remove("scanlines-animation");
+      }, 1000);
+    }, 1000);
   }
   render() {
     const screen = `
     <div class="center-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;  gap: 2rem;">
 
       
-      <span class="glitch-text pony-glow init" style="font-size: 4rem; font-weight: 900; letter-spacing: 4px;">
+      <span id="text" class="glitch-text pony-glow init" style="font-size: 4rem; font-weight: 900; letter-spacing: 4px;">
         TUS NODOS DE ENLACE
       </span>
 
@@ -34,7 +53,7 @@ class InstructionsScreen {
 
     this.engine.renderScreen(this.root, screen);
 
-    const totalAnimationTime = 3500;
+    const totalAnimationTime = 3000;
 
     setTimeout(() => {
       this.callback();

@@ -26,9 +26,11 @@ class BootingScreen {
 
       setTimeout(() => {
         this.engine.root.classList.add("scanlines");
+        this.engine.root.classList.add("scanlines-animation");
         body.style.backgroundColor = "var(--background)";
 
         setTimeout(() => {
+          this.engine.root.classList.remove("scanlines-animation");
           this.engine.handleStateUpdate(GameState.START_MENU);
         }, 1500);
       }, 2000);

@@ -24,6 +24,24 @@ const LivesComponent = ({ onRanOut }) => {
     }
   });
 
+  setTimeout(() => {
+    if (livesCount === 1) {
+      const lives = document.querySelector(".node-init");
+      /** @type {HTMLElement} */
+      const livesHeader = document.querySelector(".lives-header");
+      /** @type {HTMLElement} */
+      const livesContainer = document.querySelector(".lives-container");
+      const scanlines = document.querySelector(".root");
+
+      scanlines.classList.add("danger-scalines");
+
+      livesContainer.style.right = "1rem";
+      livesHeader.style.color = "var(--destructive)";
+
+      lives.classList.add("node-init-danger");
+    }
+  }, 10);
+
   return `
 	<div class="flex flex-row items-center lives-header" style="view-transition-name: lives-header;">
 
@@ -39,13 +57,19 @@ const LivesComponent = ({ onRanOut }) => {
 	 @param {number} newValue 
  */
 const updateLives = (newValue, onRanOut) => {
+  /** @type {HTMLElement} */
+  const livesHeader = document.querySelector(".lives-header");
+  /** @type {HTMLElement} */
+  const livesContainer = document.querySelector(".lives-container");
+  /** @type {HTMLElement} */
+
   if (Number(newValue) <= 0) {
     onRanOut();
+    document.getElementById("root").classList.remove("danger-scanlines");
+    document.getElementById("root").classList.add("scanlines");
 
     return;
   }
-
-  const livesHeader = document.querySelector(".lives-header");
 
   sessionStorage.setItem(LIVES_STORAGE_KEY, String(newValue));
 
@@ -53,6 +77,22 @@ const updateLives = (newValue, onRanOut) => {
 		${Array.from({ length: newValue })
       .map(() => pixelHeartSvg)
       .join("")}`;
+
+  setTimeout(() => {
+    if (Number(newValue) === 1) {
+      const lives = document.querySelector(".node-init");
+
+      const scanlines = document.getElementById("root");
+
+      scanlines.classList.remove("scanlines");
+      scanlines.classList.add("danger-scanlines");
+
+      livesContainer.style.right = "1rem";
+      livesHeader.style.color = "var(--destructive)";
+
+      lives.classList.add("node-init-danger");
+    }
+  });
 };
 
 export { LivesComponent, updateLives };

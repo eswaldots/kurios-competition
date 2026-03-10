@@ -61,19 +61,17 @@ const createLevels = (engine) => {
       hint: "El sistema detectó un origen externo no autorizado",
       // TODO: podria ser un codigo mas complejo
       render: `
-	  <div class="code" style="color: gray;">
-	  <pre>
-<span style="color: purple">function</span> <span style="color: yellow">validarAcceso</span>(input) {
-  <span style="color:purple">let</span> clave_maestra = <span style="color: green">"KRONOS"</span>;
-  
-  // ERROR DETECTADO EN LA LINEA 5:
-  <span style="color: purple">if</span> (input = clave_maestra) { 
-      <span style="color:purple">return</span> <span style="color:green">"Acceso Concedido"</span>;
-  }
-}
-	</pre>
-		  </div>
-	  `,
+      <div class="code" style="color: #e0e0e0; font-family: monospace; font-size: 1.1rem; line-height: 1.6;">
+        <pre style="margin: 0; tab-size: 4;">
+<span style="opacity: 0.4;">1</span> <span style="color: #ff3399;">function</span> <span style="color: #00ffff;">validarAcceso</span>(input) {
+<span style="opacity: 0.4;">2</span>     <span style="color: #ff3399;">let</span> clave_maestra = <span style="color: #a6e22e;">"KRONOS"</span>;
+<span style="opacity: 0.4;">3</span> 
+<span style="opacity: 0.4;">4</span>     <span style="color: #888888; font-style: italic;">// ERROR DETECTADO EN LA LINEA 5:</span><div class="bug-line-critical"><span style="opacity: 0.4; color: #fff;">5</span>     <span class="bug-text-glitch">if (input = clave_maestra) {</span> </div><span style="opacity: 0.4;">6</span>         <span style="color: #ff3399;">return</span> <span style="color: #a6e22e;">"Acceso Concedido"</span>;
+<span style="opacity: 0.4;">7</span>     }
+<span style="opacity: 0.4;">8</span> }
+        </pre>
+      </div>
+      `,
     },
     {
       id: 3,
@@ -362,18 +360,59 @@ class LevelScreen {
    * @param {number} level*/
   constructor(root, engine, level) {
     document.onkeydown = () => {};
-
     const levels = createLevels(engine);
-
     this.level = levels.find((l) => l.id === Number(level));
-
     this.root = root;
     this.engine = engine;
+    this.engine.root.classList.add("scanlines");
   }
-  callback() {
-    // BindTypeWriter({ querySelection: "typewriter1", speed: 0.5, delay: 0 });
-    // BindTypeWriter({ querySelection: "typewriter2", speed: 0.5, delay: 0.25 });
 
+  // --- MOTOR DE DESENCRIPTADO VISUAL AAA ---
+  scrambleText(element, newText, duration = 400, isInput = false) {
+    const chars = "!<>-_\\/[]{}—=+*^?#________01";
+    let start = Date.now();
+    let originalText = isInput ? element.value : element.innerText;
+
+    const interval = setInterval(() => {
+      let now = Date.now();
+      let progress = (now - start) / duration;
+
+      if (progress >= 1) {
+        clearInterval(interval);
+        if (isInput) {
+          element.value = newText;
+        } else {
+          element.innerText = newText;
+        }
+        element.style.color = "#00ff33"; // Verde Neón (Éxito)
+        element.style.textShadow = "0 0 10px rgba(0, 255, 51, 0.8)";
+        return;
+      }
+
+      let scrambled = originalText
+        .split("")
+        .map((char, index) => {
+          if (index < newText.length * progress) return newText[index];
+          return chars[Math.floor(Math.random() * chars.length)];
+        })
+        .join("");
+
+      // Ajuste si el nuevo texto es más largo
+      if (scrambled.length < newText.length) {
+        let extra = Math.floor((newText.length - scrambled.length) * progress);
+        for (let i = 0; i < extra; i++)
+          scrambled += chars[Math.floor(Math.random() * chars.length)];
+      }
+
+      if (isInput) {
+        element.value = scrambled;
+      } else {
+        element.innerText = scrambled;
+      }
+    }, 30); // 30fps para el glitch
+  }
+
+  callback() {
     /** @type {HTMLButtonElement}*/
     const button = document.querySelector(".continue-button");
     /** @type {HTMLInputElement}*/
@@ -384,17 +423,61 @@ class LevelScreen {
     /** @type {HTMLDivElement}*/
     const hintColumn = document.querySelector(".hint-column");
 
+    input.focus();
+
     const validate = () => {
       if (
         String(input.value).toLowerCase() === this.level.answer.toLowerCase()
       ) {
-        this.engine.handleStateUpdate(GameState.LEVEL_ENDED, this.level);
+        // 1. Bloqueo inmediato del input
+        input.disabled = true;
+        const container =
+          this.root.querySelector(".center-container") || this.root;
 
-        if (this.level.onSuccess) this.level.onSuccess();
+        // Curación silenciosa (Si estaba a 1 vida, le quitamos la asfixia roja)
+        const lives = Number(sessionStorage.getItem(LIVES_STORAGE_KEY));
+        if (lives <= 1) {
+          this.root.classList.remove("danger-scanlines");
+          this.root.classList.add("scanlines");
+          updateLives(2);
+        }
+
+        // 2. El Verde Éxito (Lo que te gustó)
+        input.style.color = "#00ff33";
+        input.style.textShadow = "0 0 10px rgba(0, 255, 51, 0.8)";
+        input.style.borderColor = "#00ff33";
+        input.style.backgroundColor = "rgba(0, 255, 51, 0.05)";
+
+        if (this.engine.audio.hitStop) this.engine.audio.hitStop.play();
+
+        // Si implementaste la función scrambleText, la usamos.
+        // Si no, simplemente cambiamos el valor:
+        if (typeof this.scrambleText === "function") {
+          this.scrambleText(input, "[ BYPASS_SUCCESS ]", 400, true);
+        } else {
+          input.value = "[ BYPASS_SUCCESS ]";
+        }
+
+        // 3. El Micro-Glitch de salida (Estilo Pony Island)
+        setTimeout(() => {
+          if (this.engine.audio.glitch) this.engine.audio.glitch.play(); // Un sonido de estática corto
+
+          // Aplicamos la clase de salida brusca que creamos antes
+          container.classList.add("pony-glitch-out");
+
+          // 4. Salto inmediato al LevelEndedScreen
+          setTimeout(() => {
+            this.engine.handleStateUpdate(GameState.LEVEL_ENDED, this.level);
+            if (this.level.onSuccess) this.level.onSuccess();
+          }, 150); // Solo 150ms de oscuridad. Un chasquido.
+        }, 800); // Le damos 800ms al jugador para leer el texto verde antes de cambiar
 
         return;
       }
 
+      // ==========================================
+      // SECUENCIA DE ERROR (DAÑO)
+      // ==========================================
       this.engine.audio.reject.play();
 
       const container =
@@ -439,23 +522,19 @@ class LevelScreen {
         input.style.borderColor = "";
         input.style.color = "";
         input.style.textShadow = "";
+        input.disabled = false;
         input.focus();
       }, 600);
     };
 
+    // ... (El resto de tus métodos de callback se mantienen igual)
     this.spawnDangerousOverlay = () => {
+      /* tu código original */
       const overlay = document.createElement("div");
       const x = Math.random() * 80 + 10;
       const y = Math.random() * 80 + 10;
-
       overlay.className = "dangerous-glitch";
-      overlay.style.cssText = `
-    position: fixed; top: ${y}%; left: ${x}%;
-    padding: 2px 8px; background: rgba(255, 0, 0, 0.2);
-    border: 1px solid #ff0000; font-family: monospace;
-    z-index: 9999; pointer-events: none; font-size: 0.9rem;
-  `;
-
+      overlay.style.cssText = `position: fixed; top: ${y}%; left: ${x}%; padding: 2px 8px; background: rgba(255, 0, 0, 0.2); border: 1px solid #ff0000; font-family: monospace; z-index: 9999; pointer-events: none; font-size: 0.9rem;`;
       const glitchCodes = [
         "ACCESS_DENIED",
         "KRONOS_DETECTED",
@@ -464,16 +543,12 @@ class LevelScreen {
       ];
       overlay.innerText =
         glitchCodes[Math.floor(Math.random() * glitchCodes.length)];
-
       this.root.appendChild(overlay);
-
       setTimeout(() => overlay.remove(), 250);
     };
 
     input.onkeydown = (e) => {
-      if (e.key == "Enter") {
-        validate();
-      }
+      if (e.key == "Enter") validate();
     };
 
     hintTrigger.onclick = () => {
@@ -486,77 +561,57 @@ class LevelScreen {
       }
     };
 
-    button.onclick = () => {
-      validate();
-    };
+    if (button) {
+      button.onclick = () => validate();
+    }
   }
+
   render() {
     const level = this.level;
-
     const screen = `
-		  <div class="center-container" style="color: white">
-		  <div class="status">
-		  ${TypewriterReturn({ content: "LOC: CHARALLAVE_NODE_27 // VNZ_SCTR", speed: 48 })}
+	  <div class="center-container level-container" style="color: white; width: 100%; height: 100%;">
+	  <div class="status">
+	  ${TypewriterReturn({ content: "LOC: CHARALLAVE_NODE_27 // VNZ_SCTR", speed: 48 })}
+      </div>
+	  <div class="container">
+	  <div class="center">
+	    <h1 class="text-xl pony-glow glitch-text font-semibold typewriter1" style="text-transform: uppercase; font-weight: 900" >${TypewriterReturn({ content: level.title, speed: 24 })}</h1>
+	    <span style="font-size: 1.1rem" class="my-3 pony-glow typewriter2">${TypewriterReturn({ content: level.description, speed: 24, delay: level.title.length * 80 })}</span>
 	  </div>
-		  <div class="container">
-		  <div class="center">
-			<h1 class="text-xl pony-glow glitch-text font-semibold typewriter1" style="text-transform: uppercase; font-weight: 900" >${TypewriterReturn({ content: level.title, speed: 24 })}</h1>
-			<p class="text-lg my-1 pony-glow typewriter2">${TypewriterReturn({ content: level.description, speed: 24, delay: level.title.length * 80 })}</p>
-		  </div>
-
-		  ${level.render}
-
-	  <div class='lives-container'>
-		  <div class="lives">
-		  ${LivesComponent({
-        onRanOut: () => {
-          // TODO: el engine podria hacer un game over
-          this.engine.handleStateUpdate(GameState.GAME_OVER);
-        },
-      })}
+	  ${level.render}
+      <div class='lives-container'>
+	  <div class="lives">
+	  ${LivesComponent({
+      onRanOut: () => {
+        this.engine.handleStateUpdate(GameState.GAME_OVER);
+      },
+    })}
+      </div>
 	  </div>
-		  </div>
-
-	  <div class="level-footer-container">
-	  <div class="level-footer">
-		  <div style="display: flex; flex-direction: column">
-		  <div class="flex items-center" style="align-items: center">
-		  <span class="text-lg" id="level-prompt">
-$
-	  </span>
-	  		<input class="input text-lg" autoFocus placeholder="${level.placeholder}" />
-		  </div>
-
-		  <div class="my-2">
-		  <span class="error"></span>
-		  </div>
-		  </div>
-
-
-		  <div class="hint-container">
-		  <span class="hint-text hint-trigger" >
-		  [ F1: Mostrar pista ]
-	  </span>
-
-		  <div class="hint-column" style="opacity: 0; transition: all 0.25s;">
-		  <span class="hint-text">
-		  > Conexion establecida con el informante
-	  </span>
-		  <span class="hint-text">
-		  >  "El intruso dejó una huella en el      
-                  sector de advertencias [WARN]"
-	  </span>
-		  </div>
-		  </div>
-
-		  </div>
-			</div>`;
+      <div class="level-footer-container">
+      <div class="level-footer">
+	  <div style="display: flex; flex-direction: column">
+	  <div class="flex items-center" style="align-items: center">
+	  <span class="text-lg" id="level-prompt">$</span>
+	    <input class="input text-lg" autoFocus placeholder="${level.placeholder}" />
+	  </div>
+	  <div class="my-2">
+	  <span class="error"></span>
+	  </div>
+	  </div>
+	  <div class="hint-container">
+	  <span class="hint-text hint-trigger" >[ F1: Mostrar pista ]</span>
+	  <div class="hint-column" style="opacity: 0; transition: all 0.25s;">
+	  <span class="hint-text">> Conexion establecida con el informante</span>
+	  <span class="hint-text">>  "El intruso dejó una huella en el sector de advertencias [WARN]"</span>
+	  </div>
+	  </div>
+	  </div>
+	    </div></div>`;
 
     this.engine.renderScreen(this.root, screen);
-
-    if (level.callback) {
+    if (level.callback)
       setTimeout(() => level.callback(), DELAY_BEFORE_CALLBACK);
-    }
     setTimeout(() => this.callback(), DELAY_BEFORE_CALLBACK);
   }
 }

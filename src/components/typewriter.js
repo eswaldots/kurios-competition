@@ -64,7 +64,7 @@ const TypewriterReturn = ({
         setTimeout(() => {
           span.style.visibility = "visible";
 
-          if (i === 0) {
+          if (i === 0 || i === charSpans.length - 1) {
             container.scrollIntoView({ block: "end" });
           }
         }, speed * i);
