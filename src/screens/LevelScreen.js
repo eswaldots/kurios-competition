@@ -20,7 +20,7 @@ const createLevels = (engine) => {
       ],
       answer: "172.0.0.1",
       description:
-        "Encuentra la IP que estuvo intenando hackear constantemente los servidores",
+        "Encuentra la IP que estuvo intentando hackear constantemente los servidores",
       placeholder: "Escribe la IP",
       hint: "El sistema detectó un origen externo no autorizado",
       render: `
