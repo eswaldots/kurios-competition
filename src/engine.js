@@ -5,7 +5,6 @@
 	 
  * Este engine, es una clase que comparte un estado compartido del elemento root y los audios, pero realmente podria ser mucho más compleja,  ya que las clases `Screen` todavía mandan sobre que contenido mostrar, como mostrarlo y que pantalla es mejor mostrar. Mucha de esa logica, se debería abstraer al engine para tener un sistema más DRY.
  * */
-
 import { LIVES_STORAGE_KEY } from "./constants.js";
 import { AskCredentialsScreen } from "./screens/AskCredentialsScreen.js";
 import { BootingScreen } from "./screens/BootingScreen.js";

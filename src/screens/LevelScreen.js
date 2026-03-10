@@ -1,4 +1,5 @@
 import { LivesComponent, updateLives } from "../components/lives.js";
+import { TypewriterReturn } from "../components/typewriter.js";
 import { DELAY_BEFORE_CALLBACK, LIVES_STORAGE_KEY } from "../constants.js";
 import { Engine } from "../engine.js";
 import { GameState } from "../state.js";
@@ -24,14 +25,14 @@ const createLevels = (engine) => {
       hint: "El sistema detectó un origen externo no autorizado",
       render: `
 		  <div class="terminal">
-<p>[  OK  ] Mounted /mnt/ext_drive_006... [cite: 2, 5]</p>
-<p>[  OK  ] Started Surveillance Protocol K27. [cite: 6]</p>
-<p>[ INFO ] Initializing decryption sequence... [cite: 7]</p>
+<p>[  <span class="success">OK</span>  ] Mounted /mnt/ext_drive_006... [cite: 2, 5]</p>
+<p>[  <span class="success">OK</span>  ] Started Surveillance Protocol K27. [cite: 6]</p>
+<p>[ <span style="color: blue">INFO</span> ] Initializing decryption sequence... [cite: 7]</p>
 
 <p>-- SYSTEM LOG: SESSION_RECOVERED_2026-02-27 -- [cite: 4]</p>
 <p>12:04:15 [PROC] PID 4402 starting: /bin/sh -access_level_1</p>
 <p>12:04:22 [AUTH] User 'GUEST' logged in from 192.168.1.12</p>
-<p>12:05:10 [WARN] Ping of death from 10.0.0.255</p>
+<p>12:05:10 [<span class="warning">WARN</span>] Ping of death from 10.0.0.255</p>
 <p>12:05:45 [AUTH] User 'ADMIN' logged in from 172.0.0.1</p>
 <p>12:06:01 [CRIT] MEMORY_CORRUPTION detected at 0x004F6</p>
 <p>12:06:05 [INFO] Manual override required to proceed...</p>
@@ -360,6 +361,8 @@ class LevelScreen {
    * @param {Engine} engine
    * @param {number} level*/
   constructor(root, engine, level) {
+    document.onkeydown = () => {};
+
     const levels = createLevels(engine);
 
     this.level = levels.find((l) => l.id === Number(level));
@@ -386,33 +389,84 @@ class LevelScreen {
         String(input.value).toLowerCase() === this.level.answer.toLowerCase()
       ) {
         this.engine.audio.accept.play();
-
         this.engine.handleStateUpdate(GameState.LEVEL_ENDED, this.level);
-
-        if (this.level.onSuccess) {
-          this.level.onSuccess();
-        }
-
+        if (this.level.onSuccess) this.level.onSuccess();
         return;
       }
 
       this.engine.audio.reject.play();
 
-      const lives = Number(sessionStorage.getItem(LIVES_STORAGE_KEY));
+      const container =
+        this.root.querySelector(".level-container") || this.root;
+      container.classList.add("aaa-fault-active");
 
-      updateLives(lives - 1);
+      const lives = Number(sessionStorage.getItem(LIVES_STORAGE_KEY));
+      const currentLives = lives - 1;
+      updateLives(currentLives, () => {
+        this.engine.handleStateUpdate(GameState.GAME_OVER);
+      });
+
+      const nodes = document.querySelectorAll(".node-init");
+      const targetNode = nodes[currentLives];
+      if (targetNode) {
+        targetNode.classList.remove("pony-glow");
+        targetNode.classList.add("node-broken", "dangerous-glow");
+      }
 
       const errorMessage =
         this.level.errors.find((l) => input.value.match(l.pattern))?.error ||
         this.level.defaultError;
 
-      error.textContent = errorMessage;
+      error.innerHTML = TypewriterReturn({
+        content: `>> CRITICAL_ERR: ${errorMessage.toUpperCase()}`,
+        as: "p",
+        speed: 6,
+      });
+      error.className = "dangerous-glitch init-dangerous";
 
-      input.style.borderColor = "var(--destructive)";
-      input.style.color = "var(--destructive)";
+      input.style.borderColor = "#ff0000";
+      input.style.color = "#ff0000";
+      input.style.textShadow = "0 0 10px rgba(255, 0, 0, 0.8)";
 
-      button.style.borderColor = "var(--destructive)";
-      button.style.color = "var(--destructive)";
+      for (let i = 0; i < 4; i++) {
+        setTimeout(() => this.spawnDangerousOverlay(), i * 80);
+      }
+
+      setTimeout(() => {
+        container.classList.remove("aaa-fault-active");
+        input.value = "";
+        input.style.borderColor = "";
+        input.style.color = "";
+        input.style.textShadow = "";
+        input.focus();
+      }, 600);
+    };
+
+    this.spawnDangerousOverlay = () => {
+      const overlay = document.createElement("div");
+      const x = Math.random() * 80 + 10;
+      const y = Math.random() * 80 + 10;
+
+      overlay.className = "dangerous-glitch";
+      overlay.style.cssText = `
+    position: fixed; top: ${y}%; left: ${x}%;
+    padding: 2px 8px; background: rgba(255, 0, 0, 0.2);
+    border: 1px solid #ff0000; font-family: monospace;
+    z-index: 9999; pointer-events: none; font-size: 0.9rem;
+  `;
+
+      const glitchCodes = [
+        "ACCESS_DENIED",
+        "KRONOS_DETECTED",
+        "SYS_OVERLOAD",
+        "0x00004F6",
+      ];
+      overlay.innerText =
+        glitchCodes[Math.floor(Math.random() * glitchCodes.length)];
+
+      this.root.appendChild(overlay);
+
+      setTimeout(() => overlay.remove(), 250);
     };
 
     input.onkeydown = (e) => {
@@ -439,14 +493,14 @@ class LevelScreen {
     const level = this.level;
 
     const screen = `
-		  <div class="center-container">
+		  <div class="center-container" style="color: white">
 		  <div class="status">
-${/* SESSION: LEVEL_${this.level.id} / 05 */ ""}
+		  ${TypewriterReturn({ content: "LOC: CHARALLAVE_NODE_27 // VNZ_SCTR", speed: 48 })}
 	  </div>
 		  <div class="container">
 		  <div class="center">
-			<h1 class="text-xl font-semibold typewriter1">${level.title}</h1>
-			<p class="text-lg my-1 typewriter2">${level.description}</p>
+			<h1 class="text-xl pony-glow glitch-text font-semibold typewriter1" style="text-transform: uppercase; font-weight: 900" >${TypewriterReturn({ content: level.title, speed: 24 })}</h1>
+			<p class="text-lg my-1 pony-glow typewriter2">${TypewriterReturn({ content: level.description, speed: 24, delay: level.title.length * 80 })}</p>
 		  </div>
 
 		  ${level.render}
@@ -464,13 +518,19 @@ ${/* SESSION: LEVEL_${this.level.id} / 05 */ ""}
 
 	  <div class="level-footer-container">
 	  <div class="level-footer">
-	  		<input class="input" placeholder="${level.placeholder}" />
-
-		   <button class="continue-button">Validar</button>
-
+		  <div style="display: flex; flex-direction: column">
+		  <div class="flex items-center" style="align-items: center">
+		  <span class="text-lg" id="level-prompt">
+$
+	  </span>
+	  		<input class="input text-lg" autoFocus placeholder="${level.placeholder}" />
 		  </div>
 
+		  <div class="my-2">
 		  <span class="error"></span>
+		  </div>
+		  </div>
+
 
 		  <div class="hint-container">
 		  <span class="hint-text hint-trigger" >

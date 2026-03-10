@@ -63,6 +63,10 @@ const TypewriterReturn = ({
       charSpans.forEach((span, i) => {
         setTimeout(() => {
           span.style.visibility = "visible";
+
+          if (i === 0) {
+            container.scrollIntoView({ block: "end" });
+          }
         }, speed * i);
       });
     }, delay);

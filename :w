@@ -425,13 +425,18 @@ body {
 }
 
 .dangerous-glitch {
-	color: #ff1111;
+	color: #ffffff;
+	background: #aa0000;
+	padding: 2px 5px;
+	font-weight: bold;
+	text-transform: uppercase;
 	text-shadow:
-		3px 0px 0px rgba(255, 255, 255, 0.8),
-		-3px 0px 0px rgba(139, 0, 0, 1),
-		0 0 15px rgba(255, 0, 0, 0.6);
-	transition: all 0.05s steps(2);
+		2px 0 0 #ff0000,
+		-2px 0 0 #00ffff;
+	box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+	transition: none;
 }
+
 
 @keyframes dangerousBoot {
 	0% {
@@ -442,7 +447,8 @@ body {
 
 	5% {
 		opacity: 1;
-		text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000;
+		text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+		background: rgba(255, 0, 0, 0.2);
 	}
 
 	10% {
@@ -490,9 +496,9 @@ body {
 		opacity: 1;
 		transform: scale(1);
 		text-shadow:
-			3px 0px 0px rgba(255, 255, 255, 0.1),
-			-3px 0px 0px rgba(255, 0, 0, 0.1),
-			0 0 12px rgba(255, 0, 0, 0.1);
+			3px 0px 0px rgba(255, 255, 255, 0.5),
+			-3px 0px 0px rgba(255, 0, 0, 0.7),
+			0 0 12px rgba(255, 0, 0, 0.5);
 	}
 }
 

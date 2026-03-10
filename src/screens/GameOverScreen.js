@@ -44,7 +44,7 @@ class GameOverScreen {
   render() {
     // TODO: agregar fade staggering
     const screen = `<div class="h-screen bg-black flex items-center pr-12" style="gap: 18rem;">
-<pre class="font-semibold typewriter" style="font-size: 0.8rem; margin-top: -6rem; height: 100vh">
+<pre class="font-semibold glitch-text pony-glow typewriter" style="font-size: 0.8rem; margin-top: -6rem; height: 100vh; opacity: 0">
                        uuuuuuuuuuuuuuuuuuuuu.
                    .u$$$$$$$$$$$$$$$$$$$$$$$$$$W.
                  u$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$Wu.
@@ -95,7 +95,7 @@ $$         $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 		  </pre>
 
 		  <div>
-		  <pre class="typewriter2">
+		  <pre class="typewriter2 glitch-text pony-glow">
  ██░ ██  ▄▄▄       ▄████▄   ██ ▄█▀▓█████ ▓█████▄     ▄▄▄▄ ▓██   ██▓
 ▓██░ ██▒▒████▄    ▒██▀ ▀█   ██▄█▒ ▓█   ▀ ▒██▀ ██▌   ▓█████▄▒██  ██▒
 ▒██▀▀██░▒██  ▀█▄  ▒▓█    ▄ ▓███▄░ ▒███   ░██   █▌   ▒██▒ ▄██▒██ ██░
@@ -107,7 +107,7 @@ $$         $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
  ░  ░  ░      ░  ░░ ░      ░  ░      ░  ░   ░        ░     ░ ░     
                   ░                       ░               ░░ ░     
 		  </pre>
-		  <pre class="typewriter3">
+		  <pre class="typewriter3 glitch-text pony-glow">
  ▄▀▀▄ █  ▄▀▀▄▀▀▀▄  ▄▀▀▀▀▄   ▄▀▀▄ ▀▄  ▄▀▀▀▀▄   ▄▀▀▀▀▄ 
 █  █ ▄▀ █   █   █ █      █ █  █ █ █ █      █ █ █   ▐ 
 ▐  █▀▄  ▐  █▀▀█▀  █      █ ▐  █  ▀█ █      █    ▀▄   
@@ -117,10 +117,10 @@ $$         $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ▐                          ▐                         
 		  </pre>
 
-	<p style="margin-bottom: 2rem; margin-top: 2.5rem; max-width: 24rem; font-size: 0.9rem;" class="typewriter4">
+	<p style="margin-bottom: 2rem; margin-top: 2.5rem; max-width: 24rem; font-size: 0.9rem;" class="typewriter4 glitch-text pony-glow">
 	${GAME_OVER_QUOTES[Math.floor(Math.random() * GAME_OVER_QUOTES.length)]}
 	</p>
-		  <button class="continue-button game-over-fade">Reintentar</button> 
+		  <h1 class="glitch-text pony-glow simple-button"><span class="char">></span>Reintentar</h1> 
 		  </div>
 
 		  </div>`;

@@ -19,7 +19,19 @@ class BootingScreen {
     button.addEventListener("click", () => {
       this.engine.audio.beep.play();
 
-      this.engine.handleStateUpdate(GameState.START_MENU);
+      const body = document.querySelector("body");
+      body.style.backgroundColor = "black";
+      this.engine.root.classList.remove("scanlines");
+      this.engine.renderScreen(this.root, ``);
+
+      setTimeout(() => {
+        this.engine.root.classList.add("scanlines");
+        body.style.backgroundColor = "var(--background)";
+
+        setTimeout(() => {
+          this.engine.handleStateUpdate(GameState.START_MENU);
+        }, 1500);
+      }, 2000);
     });
   }
   render() {
@@ -34,12 +46,14 @@ class BootingScreen {
 
     setTimeout(() => {
       this.engine.renderScreen(this.root, ``);
+
+      this.engine.root.classList.add("scanlines");
     }, 4000);
 
     setTimeout(() => {
       const screen = `
 	  <div class="center-container" style="color: white">
-<h1 style="opacity: 1" class="init pony-glow glitch-text text-5xl truncate">MISION SECRETA</h1>
+<h1 style="opacity: 1" class="init pony-glow glitch-text text-5xl truncate">KRONOS</h1>
 
 		  <div class="my-4 text-center text-3xl flex flex-col gap-2">
 		  <p id="init" class="boot-p simple-button" style="animation-delay: 1.75s"><span class="char">></span> INICIAR</p>
