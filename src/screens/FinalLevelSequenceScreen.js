@@ -101,6 +101,7 @@ class FinalLevelSequenceScreen {
         });
 
         setTimeout(() => {
+          this.root.classList.add("scanlines");
           this.engine.handleStateUpdate(GameState.FINAL_LEVEL);
         }, 12000);
       }, 500);

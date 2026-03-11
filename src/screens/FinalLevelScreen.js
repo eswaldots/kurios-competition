@@ -112,28 +112,102 @@ class FinalLevelScreen {
     }, this.tickRate);
   }
   triggerGameOver() {
-    this.root.querySelectorAll("*").forEach(
-      /** @param {HTMLElement} el*/ (el, i) => {
-        // STYLE: aqui puede haber un barrido de memoria
-        setTimeout(() => {
-          el.style.transition = "opacity 1s";
-
-          el.style.opacity = "0";
-
-          this.root.style.all = "unset";
-          // STYLE: animation de glitch
-          el.style.all = "unset";
-
-          // setTimeout(() => {
-          //   el.remove();
-          // }, i * 6000);
-        }, i * 1000);
-      },
+    // 1. Agarramos solo elementos visuales y de texto para no romper contenedores padre de golpe
+    const elements = Array.from(
+      this.root.querySelectorAll("p, h1, h2, h3, span, pre, div:not(:has(*))"),
     );
+    const glitchChars = "!<>-_\\\\/[]{}—=+*^?#01";
 
+    // 2. Colapso inicial: todo se vuelve rojo y la pantalla tiembla
+    this.root.classList.add("pony-glitch-out"); // Reutilizamos tu clase de glitch
+
+    // Inyectamos el taunt de Kronos rompiendo la lógica del sistema
+    const kronosTaunt = document.createElement("div");
+    kronosTaunt.style.position = "absolute";
+    kronosTaunt.style.top = "50%";
+    kronosTaunt.style.left = "50%";
+    kronosTaunt.style.transform = "translate(-50%, -50%)";
+    kronosTaunt.style.fontFamily = "'Silkscreen', monospace";
+    kronosTaunt.style.color = "var(--destructive, #ff0000)";
+    kronosTaunt.style.fontSize = "2.5rem";
+    kronosTaunt.style.zIndex = "9999";
+    kronosTaunt.style.textAlign = "center";
+    kronosTaunt.style.textShadow = "0 0 10px red";
+    kronosTaunt.innerHTML =
+      "FATAL ERROR<br/>[ LOGIC OVERRIDDEN: 2 + 2 = 5 ]<br/>SYSTEM PURGED.";
+    kronosTaunt.style.opacity = "0";
+    this.root.appendChild(kronosTaunt);
+
+    // Animamos la entrada del taunt
+    kronosTaunt.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 300,
+      fill: "forwards",
+    });
+
+    // 3. El Barrido Físico de Memoria (Cascada Rápida)
+    let wipeDelay = 0;
+
+    elements.forEach((el, i) => {
+      // 30ms de diferencia entre cada elemento para crear un efecto de "ola" de destrucción
+      const delay = i * 30;
+      if (delay > wipeDelay) wipeDelay = delay;
+
+      setTimeout(() => {
+        // Ignoramos el mensaje de Kronos que acabamos de crear
+        if (el === kronosTaunt) return;
+
+        // Fase 1 del nodo: Corrupción de texto
+        if (el.innerText && el.innerText.trim() !== "") {
+          el.innerText = el.innerText.replace(
+            /[^\s]/g,
+            () => glitchChars[Math.floor(Math.random() * glitchChars.length)],
+          );
+          el.style.color = "var(--destructive, #ff0000)";
+        }
+
+        // Fase 2 del nodo: Apagón brusco estilo GPU fallando (bajamos los FPS de la animación con "steps")
+        el.animate(
+          [
+            { opacity: 1, filter: "contrast(200%)" },
+            {
+              opacity: 0,
+              filter: "contrast(500%) blur(2px) grayscale(100%)",
+              offset: 0.8,
+            },
+            { opacity: 0 },
+          ],
+          {
+            duration: 350,
+            fill: "forwards",
+            easing: "steps(3)", // Hace que el desvanecimiento se vea cortado/glitcheado intencionalmente
+          },
+        );
+      }, delay);
+    });
+
+    // 4. Disparamos el estado final SÓLO cuando la cascada termine de barrer la pantalla
     setTimeout(() => {
-      this.engine.handleStateUpdate(GameState.GAME_ERASED);
-    }, 4000);
+      // Un último parpadeo del mensaje antes de morir
+      const finalFlash = kronosTaunt.animate(
+        [
+          { opacity: 1, transform: "translate(-50%, -50%) scale(1)" },
+          {
+            opacity: 0,
+            transform: "translate(-50%, -50%) scale(1.1)",
+            filter: "blur(4px)",
+          },
+        ],
+        { duration: 400, fill: "forwards", easing: "ease-in" },
+      );
+
+      finalFlash.onfinish = () => {
+        // Limpieza profunda real del DOM
+        this.root.innerHTML = "";
+        this.root.classList.remove("pony-glitch-out");
+        // Avisamos al engine que ya no hay nada
+        this.engine.handleStateUpdate(GameState.GAME_ERASED);
+      };
+    }, wipeDelay + 2000); // wipeDelay (lo que tardó el barrido) + 2 segundos para que el usuario lea el mensaje
   }
   /** @param {number} penaltyAmount */
   applyPenalty(penaltyAmount) {
