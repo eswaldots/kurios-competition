@@ -41,7 +41,7 @@ const TypewriterReturn = ({
   setTimeout(() => {
     /**@type {HTMLElement} */
     const container = document.getElementById(key);
-    container.style.opacity = "0";
+    if (container && container.style) container.style.opacity = "0";
 
     if (!container) return;
 

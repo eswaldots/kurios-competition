@@ -13,25 +13,22 @@ class FinalLevelSequenceScreen {
   }
 
   callback() {
-    // Aplicamos el glitch solo a los elementos con clase .shake [cite: 68, 69]
+    document.onkeydown = () => {};
     document.querySelectorAll(".shake").forEach((el) => {
       el.classList.add("dangerous-glitch");
     });
 
     const finalScreen = document.querySelector(".final-screen");
 
-    // Simula un 'clear' de terminal real
     const terminalClear = () => {
       finalScreen.innerHTML = "";
     };
 
-    // FASE 2: LA BRECHA DE KRONOS (Ocurre tras los logs iniciales)
     setTimeout(() => {
       if (this.engine.audio.glitch) this.engine.audio.glitch.play();
       terminalClear();
 
       setTimeout(() => {
-        // Estética purista: Todo al top-left, sin adornos
         const screen = `
           <div class="final-screen" style="font-family: var(--font-family); padding: 4rem; color: #fff; font-size: 1.5rem;">
             <p class="typewriter1" style="color: #ff3333;">[ CRITICAL ] UNKNOWN_PROCESS_BREACH: KRONOS</p>
@@ -52,7 +49,6 @@ class FinalLevelSequenceScreen {
 
         this.engine.renderScreen(this.root, screen);
 
-        // Timings secuenciales para mantener la lógica de terminal
         BindTypeWriter({ querySelection: ".typewriter1", speed: 2 });
         BindTypeWriter({
           querySelection: ".typewriter2",
@@ -65,7 +61,6 @@ class FinalLevelSequenceScreen {
           delay: 1000,
         });
 
-        // Diálogo críptico (Estilo Pony Island / Undertale)
         BindTypeWriter({
           querySelection: ".typewriter4",
           speed: 1,
@@ -88,7 +83,6 @@ class FinalLevelSequenceScreen {
           delay: 5100,
         });
 
-        // Salida final
         BindTypeWriter({
           querySelection: ".typewriter8",
           speed: 5,
@@ -109,7 +103,6 @@ class FinalLevelSequenceScreen {
   }
 
   render() {
-    // FASE 1: Logs estándar de Kurios [cite: 11, 44]
     const screen = `
       <div class="final-screen" style="font-family: var(--font-family); padding: 4rem; color: #eee; line-height: 1.6 ; font-size: 1.5rem;">
         <p class="typewriter1"><span style="color: #00ff00;">[ OK ]</span> Decrypting sector_k27: 100% completed [cite: 53]</p>
@@ -133,7 +126,6 @@ class FinalLevelSequenceScreen {
 
     this.engine.renderScreen(this.root, screen);
 
-    // Animación de entrada de logs [cite: 68]
     const delays = [0, 600, 1400, 2800, 3200, 3600, 4000, 5000, 5500, 6000];
     for (let i = 1; i <= 10; i++) {
       BindTypeWriter({

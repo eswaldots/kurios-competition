@@ -65,7 +65,7 @@ class BootingScreen {
 
 		  <div class="my-4 text-center text-3xl flex flex-col gap-2">
 		  <p id="init" class="boot-p simple-button" style="animation-delay: 1.75s"><span class="char">></span> INICIAR</p>
-		  <p class="boot-p simple-button" style="animation-delay: 2.25s"><span class="char">></span> VER LISTA DE AGENTES</p>
+		  <p class="boot-p simple-button" style="animation-delay: 2.25s; opacity: 0.5; pointer-events: none"><span class="char">></span>VER LISTA DE AGENTES</p>
 		  <p class="boot-p simple-button" id="abort" style="animation-delay: 2.75s"><span class="char">></span> ABORTAR</p>
 		  </div>
 

@@ -36,16 +36,20 @@ class GameOverScreen {
     }, 4500);
 
     button.onmouseenter = () => {
-      cursor.style.animation = "none";
-      cursor.style.color = "var(--destructive, #ff0000)";
-      button.style.textShadow = "2px 0 0 #ff0000, -2px 0 0 #00ffff";
-      if (this.engine.audio.hover) this.engine.audio.hover.play();
+      if (cursor && cursor.style) {
+        cursor.style.animation = "none";
+        cursor.style.color = "var(--destructive, #ff0000)";
+        button.style.textShadow = "2px 0 0 #ff0000, -2px 0 0 #00ffff";
+        if (this.engine.audio.hover) this.engine.audio.hover.play();
+      }
     };
 
     button.onmouseleave = () => {
-      cursor.style.animation = "blink 1s step-end infinite";
-      cursor.style.color = "inherit";
-      button.style.textShadow = "none";
+      if (cursor && cursor.style) {
+        cursor.style.animation = "blink 1s step-end infinite";
+        cursor.style.color = "inherit";
+        button.style.textShadow = "none";
+      }
     };
 
     button.onclick = () => {

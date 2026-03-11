@@ -309,9 +309,8 @@ class FinalLevelScreen {
         },
       );
 
-      // LIBERAMOS LA GPU CUANDO TERMINA PARA QUE EL SCROLL FUNCIONE
       enterAnim.onfinish = () => {
-        enterAnim.cancel(); // Mata el objeto de animación residual
+        enterAnim.cancel();
         terminal.style.clipPath = "none";
         terminal.style.filter = "none";
       };
@@ -324,8 +323,7 @@ class FinalLevelScreen {
       const input =
         document.getElementById("coords") || document.querySelector("input");
 
-      // Ocultamos el scroll temporalmente durante el colapso para que no se vea feo
-      terminal.style.overflowY = "hidden";
+      if (terminal && terminal.style) terminal.style.overflowY = "hidden";
 
       const exitAnim = terminal.animate(
         [
@@ -351,7 +349,7 @@ class FinalLevelScreen {
       );
 
       exitAnim.onfinish = () => {
-        container.innerHTML = "";
+        if (container) container.innerHTML = "";
         prompt.style.opacity = "1";
         terminal.style.backgroundColor = "transparent";
         terminal.style.zIndex = "999";
@@ -1466,7 +1464,6 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
 
     const terminal = document.getElementById("terminal");
 
-    console.log("avatarState");
     this.avatarState = "TALKING";
 
     setTimeout(() => {

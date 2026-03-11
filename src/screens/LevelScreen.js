@@ -15,7 +15,28 @@ const createLevels = (engine) => {
       errors: [
         {
           pattern: "192.168.1.12",
-          error: "Esta IP es de un usuario común y corriente",
+          error:
+            "Esta IP es de un usuario común y corriente (GUEST). Busca actividad con privilegios escalados.",
+        },
+        {
+          pattern: "10.0.0.255",
+          error:
+            "Esa es la dirección de broadcast usada para el ataque de denegación (Ping of Death), pero el atacante logró hacer login desde otra IP.",
+        },
+        {
+          pattern: "0x004F6",
+          error:
+            "Eso es una dirección de memoria en formato hexadecimal donde ocurrió la corrupción, no una dirección IPv4.",
+        },
+        {
+          pattern: "4402",
+          error:
+            "Ese es el Identificador de Proceso (PID) del script malicioso, el sistema requiere la IP de origen.",
+        },
+        {
+          pattern: "ADMIN",
+          error:
+            "Ese es el nombre del usuario comprometido. El sistema de rastreo necesita la dirección IP desde donde se conectó.",
         },
       ],
       answer: "172.0.0.1",
@@ -47,18 +68,34 @@ const createLevels = (engine) => {
         {
           pattern: "=",
           error:
-            "Estás cerca, el operador `=` asigna valores a las variables, no las compara.",
+            "Estás cerca. El operador `=` asigna el valor, haciendo que la condición sea siempre verdadera. Necesitas comparar.",
         },
         {
           pattern: "KRONOS",
-          error: "Esta es la clave a ser validada, no un operador",
+          error:
+            "Esa es la clave maestra. Debes corregir el operador lógico en el código, no reescribir la variable.",
+        },
+        {
+          pattern: "==",
+          error:
+            "El operador `==` funciona, pero en sistemas de alta seguridad (y en JS) se requiere igualdad estricta para evitar coerción de tipos. Falta un carácter.",
+        },
+        {
+          pattern: "!=",
+          error:
+            "Peligro: Usar desigualdad (!=) le daría acceso a cualquier usuario que NO tenga la clave maestra.",
+        },
+        {
+          pattern: "!==",
+          error:
+            "Peligro: Usar desigualdad estricta (!==) bloquearía al usuario legítimo y dejaría entrar a los demás.",
         },
       ],
       answer: "===",
       description:
         "Error de sintaxis detectado en el módulo de seguridad. Inserte el operador que deberia usarse realmente.",
       placeholder: "Operador correcto",
-      hint: "El sistema detectó un origen externo no autorizado",
+      hint: "Busca un operador que verifique tanto el valor como el tipo de dato.",
       // TODO: podria ser un codigo mas complejo
       render: `
       <div class="code" style="color: #e0e0e0; font-family: monospace; font-size: 1.1rem; line-height: 1.6;">
@@ -86,10 +123,27 @@ const createLevels = (engine) => {
       errors: [
         {
           pattern: "askdjfhaskjdh",
-          error: "que raro",
+          error:
+            "Secuencia ininteligible. Deja de teclear al azar y usa el escáner (cursor) sobre la estática.",
+        },
+        {
+          pattern: "k27",
+          error:
+            "Ese es el sector del sistema donde nos encontramos, no el nombre de la anomalía oculta.",
+        },
+        {
+          pattern: "KRONOS",
+          error:
+            "Has encontrado la palabra, pero el decodificador es sensible a mayúsculas. Intenta el formato exacto.",
+        },
+        {
+          pattern: "entidad",
+          error:
+            "Estás buscando el *nombre* de la entidad, no su clasificación.",
         },
       ],
       answer: "kronos",
+      hint: "Usa el cursor para desencriptar la señal visual.",
       description:
         "AVISO: LA SEÑAL ESTÁ SIENDO INTERCEPTADA POR UNA ENTIDAD DESCONOCIDA",
       placeholder: "Mensaje desencriptado",
@@ -182,11 +236,33 @@ const createLevels = (engine) => {
     {
       id: 4,
       title: "Intercepción de frecuencia",
-      hint: "La señal correcta se encuentra en un punto específico.Demasiada ganancia solo añadirá ruido.",
+      hint: "La señal correcta se encuentra en un punto específico. Demasiada ganancia solo añadirá ruido.",
       answer: "8022",
       // TODO: esto seria un poco complejo, pero seria genial si dependiendo de que tanta estatica haya, se pueda dar feedback aqui al usuario de que esta haciendo algo mal o algo bien en los errores, algo asi como un barometro o grafica de referencia
       defaultError: "Señal incorrecta",
       placeholder: "Codigo secreto",
+      errors: [
+        {
+          pattern: "802",
+          error:
+            "Señal incompleta. Faltan datos en la transmisión. Ajusta la perilla de frecuencia lentamente.",
+        },
+        {
+          pattern: "8023",
+          error:
+            "Casi lo tienes. El último dígito está distorsionado. Baja un poco la ganancia para limpiar el ruido.",
+        },
+        {
+          pattern: "8000",
+          error:
+            "Demasiada interferencia. Recuerda: subir la ganancia al máximo solo amplificará la estática.",
+        },
+        {
+          pattern: "0000",
+          error:
+            "No estás captando nada. Sincroniza las ondas del visualizador antes de intentar descifrar el audio.",
+        },
+      ],
       onSuccess: () => {
         // TODO: agrega definiciones de audioContext
         window.audioContext.close();
@@ -536,19 +612,62 @@ class LevelScreen {
       setTimeout(() => overlay.remove(), 250);
     };
 
-    input.onkeydown = (e) => {
-      if (e.key == "Enter") validate();
-    };
+    const hintSpans = hintColumn.querySelectorAll(
+      ".hint-text:not(.hint-trigger)",
+    );
 
-    hintTrigger.onclick = () => {
-      if (hintColumn.style.opacity === "1") {
-        hintTrigger.textContent = "[ F1: Mostrar pista ]";
-        hintColumn.style.opacity = "0";
-      } else {
+    const originalTexts = Array.from(hintSpans).map((span) => span.textContent);
+    const glitchChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*()_+{}|:<>?";
+
+    function runGlitchEffect(element, finalString) {
+      let iterations = 0;
+
+      const interval = setInterval(() => {
+        element.textContent = finalString
+          .split("")
+          .map((letter, index) => {
+            if (index < iterations || letter === " ") {
+              return finalString[index];
+            }
+            return glitchChars[Math.floor(Math.random() * glitchChars.length)];
+          })
+          .join("");
+
+        if (iterations >= finalString.length) {
+          clearInterval(interval);
+        }
+
+        iterations += 1;
+      }, 20);
+    }
+
+    function toggleHint() {
+      const isHidden =
+        hintColumn.style.opacity === "0" || hintColumn.style.opacity === "";
+
+      if (isHidden) {
         hintTrigger.textContent = "[ F1: Ocultar pista ]";
         hintColumn.style.opacity = "1";
+
+        hintSpans.forEach((span, index) => {
+          runGlitchEffect(span, originalTexts[index]);
+        });
+      } else {
+        hintTrigger.textContent = "[ F1: Mostrar pista ]";
+        hintColumn.style.opacity = "0";
+      }
+    }
+
+    document.onkeydown = (e) => {
+      if (e.key === "F1" || e.keyCode === 112) {
+        e.preventDefault();
+        toggleHint();
+      } else if (e.key === "Enter") {
+        validate();
       }
     };
+
+    hintTrigger.onclick = toggleHint;
 
     if (button) {
       button.onclick = () => validate();
@@ -559,14 +678,14 @@ class LevelScreen {
     const level = this.level;
     const screen = `
 	  <div class="center-container level-container" style="color: white; width: 100%; height: 100%;">
-	  <div class="status">
+	  <div class="status" style="font-size: 1rem">
 	  ${TypewriterReturn({ content: "LOC: CHARALLAVE_NODE_27 // VNZ_SCTR", speed: 48 })}
       </div>
 	  <div class="container">
 	  <div class="center">
-	    <h1 class="text-xl pony-glow glitch-text font-semibold typewriter1" style="text-transform: uppercase; font-weight: 900" >${TypewriterReturn({ content: level.title, speed: 24 })}</h1>
+	    <span class="pony-glow glitch-text font-semibold typewriter1" style="font-size: 3rem; text-transform: uppercase; font-weight: 900" >${TypewriterReturn({ content: level.title, speed: 24 })}</span>
 		  <div class="my-3">
-	    <span style="font-size: 1.1rem" class="my-3 pony-glow typewriter2">${TypewriterReturn({ content: level.description, speed: 24, delay: level.title.length * 80 })}</span>
+	    <span style="font-size: 1.5rem;" class="my-3 typewriter2">${TypewriterReturn({ content: level.description, speed: 24, delay: level.title.length * 80 })}</span>
 		  </div>
 	  </div>
 	  ${level.render}
@@ -583,18 +702,18 @@ class LevelScreen {
       <div class="level-footer">
 	  <div style="display: flex; flex-direction: column">
 	  <div class="flex items-center" style="align-items: center">
-	  <span class="text-lg" id="level-prompt">$</span>
-	    <input class="input text-lg" autoFocus placeholder="${level.placeholder}" />
+	  <span style="font-size: 1.25rem" class="text-lg" id="level-prompt">$</span>
+	    <input style="font-size: 1.25rem" class="input" autoFocus placeholder="${level.placeholder}" />
 	  </div>
 	  <div class="my-2">
-	  <span class="error"></span>
+	  <span style="font-size: 1.25rem" class="error"></span>
 	  </div>
 	  </div>
 	  <div class="hint-container">
-	  <span class="hint-text hint-trigger" >[ F1: Mostrar pista ]</span>
-	  <div class="hint-column" style="opacity: 0; transition: all 0.25s;">
+	  <span style="font-size: 1rem" class="hint-text hint-trigger">[ F1: Mostrar pista ]</span>
+	  <div class="hint-column" style="opacity: 0; transition: all 0.25s; font-size: 1rem;">
 	  <span class="hint-text">> Conexion establecida con el informante</span>
-	  <span class="hint-text">>  "El intruso dejó una huella en el sector de advertencias [WARN]"</span>
+	  <span class="hint-text">>  "${level.hint}"</span>
 	  </div>
 	  </div>
 	  </div>

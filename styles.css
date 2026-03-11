@@ -40,12 +40,6 @@ body {
 	position: relative;
 }
 
-.scanlines {
-	position: fixed;
-	inset: 0;
-	height: 100vh;
-	width: 100vw;
-}
 
 /* Parpadeo instantáneo al entrar a la pantalla de carga */
 .pony-glitch-flash {
@@ -73,6 +67,13 @@ body {
 	}
 }
 
+.scanlines {
+	position: fixed;
+	inset: 0;
+	height: 100vh;
+	width: 100vw;
+}
+
 .scanlines-animation {
 	animation: fade-in 1s ease forwards;
 }
@@ -86,7 +87,7 @@ body {
 	height: 100vh;
 	width: 100vw;
 	background: linear-gradient(rgba(0, 0, 0, 0) 70%,
-			rgba(0, 0, 0, 1) 70%);
+			rgba(0, 0, 0, 0.25) 70%);
 	background-size: 100% 2px;
 }
 
