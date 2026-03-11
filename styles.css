@@ -41,7 +41,6 @@ body {
 }
 
 
-/* Parpadeo instantáneo al entrar a la pantalla de carga */
 .pony-glitch-flash {
 	animation: flashIn 0.15s steps(2) forwards;
 }
@@ -542,7 +541,6 @@ body {
 	}
 }
 
-/* El contenedor debe ocultar todo rastro de KRONOS por defecto */
 .k27-intercept-container {
 	position: relative;
 	overflow: hidden;
@@ -561,15 +559,12 @@ body {
 	color: #ff0000;
 	z-index: 1;
 	opacity: 0;
-	/* Totalmente invisible hasta el hover */
 	filter: blur(10px);
 	transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
 	pointer-events: none;
-	/* Mezcla de color para que interactúe con el texto blanco */
 	mix-blend-mode: difference;
 }
 
-/* Efecto al hacer HOVER */
 .k27-intercept-container:hover .k27-entity-kronos {
 	opacity: 1;
 	transform: translate(-50%, -50%) scale(1);
@@ -579,7 +574,6 @@ body {
 
 .k27-intercept-container:hover .k27-garbage-data {
 	color: #555;
-	/* El texto basura se apaga para dejar resaltar a KRONOS */
 	transform: scale(1.02);
 	filter: contrast(2) brightness(0.5);
 }
@@ -1409,7 +1403,6 @@ body {
 	}
 
 	50% {
-		/* Aumentamos muy ligeramente el brillo profundo en el medio */
 		text-shadow:
 			0 0 3px rgba(255, 51, 51, 0.4),
 			1.2px 0 1px rgba(0, 255, 255, 0.25),
@@ -1737,7 +1730,6 @@ body {
 	border-color: #cc241d;
 }
 
-/* Clases de utilidad */
 .hidden {
 	display: none;
 }

@@ -1572,26 +1572,23 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
     const el = document.getElementById("kronos");
     if (!el) return;
 
-    // Obtenemos un número aleatorio para efectos esporádicos
+    // un numero aleatorio para chance de glitch random
     const chance = Math.random();
 
     switch (this.avatarState) {
       case "TALKING":
-        // Movimiento agresivo y constante mientras habla
         el.textContent = chance > 0.5 ? frames.NORMAL : frames.TALKING;
         el.style.color = chance > 0.8 ? "#fff" : "var(--destructive)";
         el.style.transform = `translate(${chance * 4 - 2}px, 0)`;
         break;
 
       case "CRITICAL":
-        // Colapso total
         el.textContent = frames.TALKING;
         el.style.filter = "invert(1) blur(1px)";
         el.style.animation = "shake-effect 0.05s infinite";
         break;
 
-      default: // IDLE (IA en espera)
-        // 90% del tiempo está normal, 10% tiene un micro-glitch
+      default:
         if (chance > 0.9) {
           el.textContent = frames.TALKING;
           el.style.transform = "translateX(2px)";
@@ -1601,7 +1598,6 @@ style="font-size: 1rem;width: 2.5rem; height: 1.5rem; display: flex; align-items
           el.style.transform = "translateX(0)";
           el.style.color = "var(--destructive)";
         }
-        // Efecto de respiración digital (opacidad suave)
         el.style.opacity = 0.7 + Math.sin(Date.now() / 500) * 0.2;
         break;
     }

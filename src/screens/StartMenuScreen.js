@@ -120,7 +120,6 @@ El sistema requiere intervención manual.
               mainContainer.classList.add("retro-crash");
             }
 
-            // 4. Esperamos el tiempo exacto (500ms) y lanzamos la terminal
             setTimeout(() => {
               retroStyle.remove();
               this.engine.handleStateUpdate(GameState.INSTRUCTIONS);
